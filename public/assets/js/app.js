@@ -35,6 +35,15 @@
             return;
         }
 
+        if (window.toastr) {
+            messages.forEach(function (message) {
+                if (typeof window.toastr[message.type] === 'function') {
+                    window.toastr[message.type](message.text);
+                }
+            });
+            return;
+        }
+
         if (window.Swal) {
             var message = messages[0];
             var titles = {
@@ -50,14 +59,11 @@
                 icon: message.type,
                 confirmButtonColor: '#f5a400'
             });
-
             return;
         }
 
         messages.forEach(function (message) {
-            if (window.toastr && typeof window.toastr[message.type] === 'function') {
-                window.toastr[message.type](message.text);
-            }
+            window.alert(message.text);
         });
     }
 
@@ -224,6 +230,27 @@
                 text: 'Please confirm this payment action.',
                 icon: 'question',
                 confirmButtonText: 'Yes, confirm'
+            },
+            {
+                selector: 'form.important-action-form',
+                title: 'Confirm action?',
+                text: 'Please confirm you want to continue.',
+                icon: 'question',
+                confirmButtonText: 'Yes, continue'
+            },
+            {
+                selector: 'form.profile-update-form',
+                title: 'Update profile?',
+                text: 'Please confirm you want to save these profile changes.',
+                icon: 'question',
+                confirmButtonText: 'Yes, update'
+            },
+            {
+                selector: 'form.password-update-form',
+                title: 'Update password?',
+                text: 'Please confirm you want to change your login password.',
+                icon: 'warning',
+                confirmButtonText: 'Yes, update password'
             }
         ];
 
@@ -385,6 +412,194 @@
         });
     }
 
+    function initSalesCalculators() {
+        document.querySelectorAll('[data-sales-form]').forEach(function (form) {
+            var itemsWrap = form.querySelector('[data-sales-items]');
+            var addButton = form.querySelector('[data-sales-add-row]');
+            var subtotalInput = form.querySelector('[data-sales-subtotal]');
+            var discountInput = form.querySelector('[data-sales-discount]');
+            var vatInput = form.querySelector('[data-sales-vat]');
+            var grandTotalInput = form.querySelector('[data-sales-grand-total]');
+
+            if (!itemsWrap || !addButton || !subtotalInput || !discountInput || !vatInput || !grandTotalInput) {
+                return;
+            }
+
+            function parseAmount(value) {
+                var amount = Number.parseFloat(value);
+                return Number.isFinite(amount) ? amount : 0;
+            }
+
+            function rows() {
+                return Array.prototype.slice.call(itemsWrap.querySelectorAll('[data-sales-row]'));
+            }
+
+            function selectedOption(row) {
+                var select = row.querySelector('[data-sales-battery]');
+                return select ? select.options[select.selectedIndex] : null;
+            }
+
+            function availableStock(row) {
+                var option = selectedOption(row);
+                var stock = option ? parseAmount(option.dataset.stock) : 0;
+                var select = row.querySelector('[data-sales-battery]');
+                var originalBattery = row.dataset.originalBattery || '';
+                var currentQuantity = parseAmount(row.dataset.currentQuantity || 0);
+
+                if (select && select.value && select.value === originalBattery) {
+                    stock += currentQuantity;
+                }
+
+                return stock;
+            }
+
+            function updateRemoveButtons() {
+                var currentRows = rows();
+                currentRows.forEach(function (row) {
+                    var removeButton = row.querySelector('[data-sales-remove-row]');
+                    if (removeButton) {
+                        removeButton.disabled = currentRows.length <= 1;
+                    }
+                });
+            }
+
+            function reindexRows() {
+                rows().forEach(function (row, index) {
+                    row.querySelectorAll('select, input').forEach(function (input) {
+                        if (input.name) {
+                            input.name = input.name.replace(/items\[\d+\]/, 'items[' + index + ']');
+                        }
+
+                        if (input.id) {
+                            input.id = input.id.replace(/items_\d+_/, 'items_' + index + '_');
+                        }
+                    });
+
+                    row.querySelectorAll('label[for]').forEach(function (label) {
+                        label.setAttribute('for', label.getAttribute('for').replace(/items_\d+_/, 'items_' + index + '_'));
+                    });
+                });
+            }
+
+            function updateRow(row, shouldWarn) {
+                var option = selectedOption(row);
+                var quantityInput = row.querySelector('[data-sales-quantity]');
+                var unitPriceInput = row.querySelector('[data-sales-unit-price]');
+                var lineTotalInput = row.querySelector('[data-sales-line-total]');
+
+                if (!quantityInput || !unitPriceInput || !lineTotalInput) {
+                    return;
+                }
+
+                var quantity = Math.max(parseAmount(quantityInput.value), 0);
+                var price = option ? parseAmount(option.dataset.price) : 0;
+                var stock = availableStock(row);
+
+                if (option && option.value && quantity > stock) {
+                    quantityInput.value = stock > 0 ? stock : 1;
+                    quantity = parseAmount(quantityInput.value);
+
+                    if (shouldWarn && window.toastr) {
+                        window.toastr.error('Insufficient stock.');
+                    }
+                }
+
+                unitPriceInput.value = price.toFixed(2);
+                lineTotalInput.value = (quantity * price).toFixed(2);
+            }
+
+            function updateSummary() {
+                var subtotal = rows().reduce(function (total, row) {
+                    var lineTotalInput = row.querySelector('[data-sales-line-total]');
+                    return total + parseAmount(lineTotalInput ? lineTotalInput.value : 0);
+                }, 0);
+                var discount = Math.max(parseAmount(discountInput.value), 0);
+                var vat = Math.max(parseAmount(vatInput.value), 0);
+                var grandTotal = Math.max(subtotal - discount + vat, 0);
+
+                subtotalInput.value = subtotal.toFixed(2);
+                grandTotalInput.value = grandTotal.toFixed(2);
+            }
+
+            function updateAll(shouldWarn) {
+                rows().forEach(function (row) {
+                    updateRow(row, shouldWarn);
+                });
+                updateSummary();
+                updateRemoveButtons();
+            }
+
+            function bindRow(row) {
+                var batterySelect = row.querySelector('[data-sales-battery]');
+                var quantityInput = row.querySelector('[data-sales-quantity]');
+                var removeButton = row.querySelector('[data-sales-remove-row]');
+
+                if (batterySelect) {
+                    batterySelect.addEventListener('change', function () {
+                        updateAll(false);
+                    });
+                }
+
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', function () {
+                        updateAll(true);
+                    });
+                }
+
+                if (removeButton) {
+                    removeButton.addEventListener('click', function () {
+                        if (rows().length <= 1) {
+                            return;
+                        }
+
+                        row.remove();
+                        reindexRows();
+                        updateAll(false);
+                    });
+                }
+            }
+
+            addButton.addEventListener('click', function () {
+                var template = rows()[0];
+                var clone = template.cloneNode(true);
+
+                clone.dataset.originalBattery = '';
+                clone.dataset.currentQuantity = '0';
+                clone.querySelectorAll('.invalid-feedback').forEach(function (feedback) {
+                    feedback.remove();
+                });
+                clone.querySelectorAll('.is-invalid').forEach(function (field) {
+                    field.classList.remove('is-invalid');
+                });
+                clone.querySelectorAll('select').forEach(function (select) {
+                    select.value = '';
+                });
+                clone.querySelectorAll('input').forEach(function (input) {
+                    if (input.matches('[data-sales-quantity]')) {
+                        input.value = '1';
+                    } else {
+                        input.value = '0.00';
+                    }
+                });
+
+                itemsWrap.appendChild(clone);
+                bindRow(clone);
+                reindexRows();
+                updateAll(false);
+            });
+
+            discountInput.addEventListener('input', function () {
+                updateSummary();
+            });
+            vatInput.addEventListener('input', function () {
+                updateSummary();
+            });
+
+            rows().forEach(bindRow);
+            updateAll(false);
+        });
+    }
+
     function initPasswordToggles() {
         var eyeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
         var eyeOffIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"/><path d="M9.88 5.09A10.4 10.4 0 0 1 12 4.87c6.5 0 10 7.13 10 7.13a18.2 18.2 0 0 1-2.51 3.55"/><path d="M6.61 6.61A17.8 17.8 0 0 0 2 12s3.5 7.13 10 7.13a10.6 10.6 0 0 0 4.23-.88"/></svg>';
@@ -418,6 +633,7 @@
         initCustomerSearch();
         initCustomerDetailsModals();
         initRepairAmountCalculators();
+        initSalesCalculators();
         initPasswordToggles();
         showFlashMessages();
     });

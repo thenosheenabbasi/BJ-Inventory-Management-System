@@ -1,6 +1,7 @@
 @php
     $customerName = $repairJob->customer?->full_name ?: 'Customer';
     $customerCode = $repairJob->customer?->customer_code ?: 'NA';
+    $brandName = 'M. Bilal jamshed';
     $slipTitle = $customerName.' '.$repairJob->repair_number;
 @endphp
 <!DOCTYPE html>
@@ -15,7 +16,7 @@
             --muted: #667085;
             --line: #d0d5dd;
             --soft: #f8fafc;
-            --brand: #07111f;
+            --brand: #272757;
         }
 
         * {
@@ -36,8 +37,8 @@
             margin: 18px auto;
             padding: 10mm;
             background:
-                radial-gradient(circle at top left, rgba(7, 17, 31, 0.06), transparent 32%),
-                radial-gradient(circle at bottom right, rgba(7, 17, 31, 0.07), transparent 34%),
+                radial-gradient(circle at top left, rgba(39, 39, 87, 0.06), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(39, 39, 87, 0.07), transparent 34%),
                 #ffffff;
             box-shadow: 0 16px 44px rgba(15, 23, 42, 0.12);
             -webkit-print-color-adjust: exact;
@@ -91,13 +92,13 @@
         }
 
         .slip::before {
-            content: "BJ Laptop Hub";
+            content: "M. Bilal Jamshed";
             position: absolute;
             top: 56%;
             left: 50%;
             width: 100%;
             text-align: center;
-            color: rgba(7, 17, 31, 0.12);
+            color: rgba(39, 39, 87, 0.12);
             font-size: 58px;
             font-weight: 800;
             letter-spacing: 0.03em;
@@ -112,7 +113,7 @@
             position: absolute;
             inset: 0;
             background:
-                repeating-linear-gradient(135deg, rgba(7, 17, 31, 0.04) 0 1px, transparent 1px 18px);
+                repeating-linear-gradient(135deg, rgba(39, 39, 87, 0.04) 0 1px, transparent 1px 18px);
             background-position: 0 0;
             background-size: 100% 100%;
             background-repeat: no-repeat;
@@ -127,28 +128,12 @@
 
         .slip-header {
             display: grid;
-            grid-template-columns: auto 1fr auto;
+            grid-template-columns: 1fr auto;
             gap: 8px;
             align-items: center;
             padding: 24px 18px 16px;
             border-bottom: 1px solid var(--line);
             background: rgba(255, 255, 255, 0.78);
-        }
-
-        .brand-logo {
-            width: 96px;
-            height: 68px;
-            display: grid;
-            place-items: center;
-            border: 0;
-            border-radius: 0;
-            overflow: hidden;
-        }
-
-        .brand-logo img {
-            width: 90px;
-            height: auto;
-            object-fit: contain;
         }
 
         .brand {
@@ -162,7 +147,7 @@
 
         .brand h1 {
             margin: 0;
-            font-size: 21px;
+            font-size: 26px;
             line-height: 1;
             letter-spacing: 0.02em;
             white-space: nowrap;
@@ -382,9 +367,9 @@
         .footer-note {
             margin-top: 24px;
             padding: 12px 16px;
-            border-top: 4px solid #f59e0b;
+            border-top: 4px solid var(--brand);
             border-radius: 8px;
-            background: #07111f;
+            background: var(--brand);
             color: #ffffff;
             font-size: 11px;
             line-height: 1.45;
@@ -457,12 +442,9 @@
     <main class="page">
         <section class="slip">
             <header class="slip-header">
-                <div class="brand-logo">
-                    <img src="{{ asset('assets/images/bj-logo-slip-tight.png') }}" alt="BJ Laptop Hub Logo">
-                </div>
                 <div class="brand">
-                    <h1>BJ Laptop Hub</h1>
-                    <p>Repair Battery Payment Slip</p>
+                    <h1>{{ $brandName }}</h1>
+                    <p>Inventory Management System</p>
                 </div>
                 <div class="meta">
                     <p>Slip No</p>
@@ -552,7 +534,7 @@
                     </div>
 
                     <div class="footer-note">
-                        Thank you for choosing BJ Laptop Hub. Keep this slip for repair tracking, payment confirmation, and pickup verification.
+                        Thank you for choosing {{ $brandName }}. Keep this slip for repair tracking, payment confirmation, and pickup verification.
                     </div>
                 </div>
             </div>

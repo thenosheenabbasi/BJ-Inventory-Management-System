@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <form method="post" action="{{ route('password.update') }}" class="settings-form">
+    <form method="post" action="{{ route('password.update') }}" class="settings-form password-update-form">
         @csrf
         @method('put')
 

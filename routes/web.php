@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BatteryInventoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RepairJobController;
+use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SupplierController;
 use App\Models\Customer;
 use App\Models\BatteryInventory;
@@ -99,6 +100,9 @@ Route::middleware('auth')->group(function () {
         ->parameters(['repair-jobs' => 'repairJob']);
     Route::get('repair-jobs/{repairJob}/slip', [RepairJobController::class, 'slip'])
         ->name('repair-jobs.slip');
+    Route::get('sales/{sale}/slip', [SalesController::class, 'slip'])
+        ->name('sales.slip');
+    Route::resource('sales', SalesController::class);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

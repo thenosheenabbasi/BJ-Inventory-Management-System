@@ -9,7 +9,6 @@ class Supplier extends Model
     protected $fillable = [
         'supplier_code',
         'company_name',
-        'name',
         'contact_person',
         'phone',
         'whatsapp',

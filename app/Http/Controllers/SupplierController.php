@@ -75,7 +75,6 @@ class SupplierController extends Controller
         $validated = $this->validatedSupplierData($request);
         $validated['supplier_code'] = $this->generateSupplierCode();
         $validated['created_by'] = Auth::id();
-        $validated['name'] = $validated['company_name'];
 
         Supplier::create($validated);
 
@@ -105,7 +104,6 @@ class SupplierController extends Controller
         ]);
 
         $validated = $this->validatedSupplierData($request, $supplier);
-        $validated['name'] = $validated['company_name'];
 
         $supplier->update($validated);
 

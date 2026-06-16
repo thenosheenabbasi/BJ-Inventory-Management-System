@@ -46,6 +46,11 @@ class BatteryInventory extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
     public function isLowStock(): bool
     {
         return $this->stock_quantity <= $this->low_stock_alert_quantity;

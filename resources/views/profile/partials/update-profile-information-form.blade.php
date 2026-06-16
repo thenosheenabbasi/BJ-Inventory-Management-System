@@ -3,7 +3,6 @@
         <div>
             <span class="settings-eyebrow">Account</span>
             <h2>Profile Information</h2>
-            <p>Update your display name. Email address is fixed for this dashboard account.</p>
         </div>
     </div>
 
@@ -11,7 +10,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="settings-form">
+    <form method="post" action="{{ route('profile.update') }}" class="settings-form profile-update-form">
         @csrf
         @method('patch')
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Sign In | BJ Laptop Hub</title>
+    <title>Sign In | Inventory Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-N5vRtFetEfE9OdLDKnsXHpswJ4cyGmX5a8kTzadxi+u0i7GoCmBbJZzZH+OiJhCE" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
@@ -54,14 +54,6 @@
 
                     <button type="submit" class="btn btn-signin">Sign in</button>
                 </form>
-            </div>
-        </div>
-
-        <div class="login-right">
-            <div class="brand-panel">
-                <div class="brand-logo">
-                    <img src="{{ asset('images/BJ Laptop Hub logo.png') }}" alt="BJ Laptop Hub Logo" />
-                </div>
             </div>
         </div>
     </div>

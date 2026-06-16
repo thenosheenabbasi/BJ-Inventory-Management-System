@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'BJ Laptop Hub') }}</title>
+    <title>{{ config('app.name', 'M. Bilal jamshed') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-N5vRtFetEfE9OdLDKnsXHpswJ4cyGmX5a8kTzadxi+u0i7GoCmBbJZzZH+OiJhCE" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
@@ -16,6 +16,7 @@
     data-flash-info="{{ session('info') }}"
 >
     @php
+        $brandName = 'M. Bilal jamshed';
         $userRole = Auth::user()->role ?? 'customer';
         $displayRole = $userRole === 'admin' ? 'Administrator' : ucwords($userRole);
         $menuItems = [];
@@ -25,7 +26,7 @@
                 ['label' => 'Customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
                 ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'Sales', 'href' => '#'],
+                ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
                 ['label' => 'Payments', 'href' => '#'],
                 ['label' => 'QR Scanner', 'href' => '#'],
                 ['label' => 'Reports', 'href' => '#'],
@@ -39,7 +40,7 @@
                 ['label' => 'Customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
                 ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'Sales', 'href' => '#'],
+                ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
                 ['label' => 'Payments', 'href' => '#'],
                 ['label' => 'QR Scanner', 'href' => '#'],
                 ['label' => 'Reports', 'href' => '#'],
@@ -64,10 +65,9 @@
             </button>
 
             <div class="sidebar-brand">
-                <img src="{{ asset('assets/images/bj-logo.png') }}" alt="BJ Laptop Hub" />
                 <div class="sidebar-brand-text">
-                    <span>BJ Inventory</span>
-                    <strong>Management System</strong>
+                    <span>{{ $brandName }}</span>
+                    <strong>Inventory Management System</strong>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                <p>© 2026 BJ Laptop Hub</p>
+                <p>© 2026 {{ $brandName }}</p>
                 <p class="sidebar-footer-secondary">All rights reserved.</p>
             </div>
         </aside>
@@ -106,7 +106,7 @@
                     <div class="dropdown user-dropdown">
                         <button class="user-profile-btn dropdown-toggle" type="button" id="userProfileDropdown" data-profile-dropdown-toggle aria-expanded="false">
                             <span class="avatar" aria-hidden="true">
-                                <img src="{{ asset('assets/images/bj-logo.png') }}" alt="" />
+                                <img src="{{ asset('assets/images/m-bilal-avatar.png') }}" alt="" />
                             </span>
 
                             <span class="user-details">

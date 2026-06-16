@@ -4,7 +4,10 @@
 
     <div class="settings-page">
         <div class="settings-backbar">
-            <a href="{{ route('dashboard') }}" class="btn btn-light back-btn">Back to Dashboard</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-light back-btn">
+                <span>&larr;</span>
+                Back to Dashboard
+            </a>
         </div>
 
         <div class="settings-grid settings-grid-single">
