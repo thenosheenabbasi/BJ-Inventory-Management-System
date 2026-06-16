@@ -252,7 +252,7 @@
                                             <tbody>
                                                 @forelse ($repairJob->payments as $payment)
                                                     <tr>
-                                                        <td>{{ $payment->payment_number }}</td>
+                                                        <td>{{ $payment->code() }}</td>
                                                         <td>{{ ucfirst($payment->payment_type) }}</td>
                                                         <td>{{ ucwords(str_replace('_', ' ', $payment->method)) }}</td>
                                                         <td>{{ \App\Helpers\CurrencyHelper::format($payment->amount) }}</td>

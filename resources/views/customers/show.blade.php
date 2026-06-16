@@ -67,6 +67,14 @@
                         <span>Created By</span>
                         <strong>{{ $customer->createdBy?->name ?: '-' }}</strong>
                     </div>
+                    <div class="detail-item">
+                        <span>Total Paid</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($totalPaid) }}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Outstanding Balance</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($outstandingBalance) }}</strong>
+                    </div>
                 </div>
 
                 @if ($customer->notes)
@@ -84,15 +92,88 @@
                 </div>
                 <div class="table-card history-card">
                     <h3>Purchase History</h3>
-                    <p>Purchases will appear here once the sales module is connected.</p>
+                    <div class="table-scroll customer-history-table">
+                        <table class="module-table">
+                            <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($invoiceHistory as $invoice)
+                                    <tr>
+                                        <td><span class="code-text">{{ $invoice->sale_number }}</span></td>
+                                        <td>{{ \App\Helpers\CurrencyHelper::format($invoice->total_amount) }}</td>
+                                        <td><span class="status-badge {{ $invoice->paymentStatusBadgeClass() }}">{{ $invoice->paymentStatusLabel() }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="no-results-cell">No purchases found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="table-card history-card">
                     <h3>Payment History</h3>
-                    <p>Payments will appear here once the payment module is connected.</p>
+                    <div class="table-scroll customer-history-table">
+                        <table class="module-table">
+                            <thead>
+                                <tr>
+                                    <th>Payment</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($paymentHistory as $payment)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('payments.show', $payment) }}" class="code-text">{{ $payment->code() }}</a>
+                                        </td>
+                                        <td>{{ \App\Helpers\CurrencyHelper::format($payment->total_payment_amount) }}</td>
+                                        <td>{{ $payment->payment_date?->format('d M Y') ?: '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="no-results-cell">No payments found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="table-card history-card">
                     <h3>Invoice History</h3>
-                    <p>Invoices will appear here once invoice workflows are connected.</p>
+                    <div class="table-scroll customer-history-table">
+                        <table class="module-table">
+                            <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Paid</th>
+                                    <th>Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($invoiceHistory as $invoice)
+                                    <tr>
+                                        <td>
+                                            <a href="{{ route('sales.show', $invoice) }}" class="code-text">{{ $invoice->sale_number }}</a>
+                                        </td>
+                                        <td>{{ \App\Helpers\CurrencyHelper::format($invoice->received_amount) }}</td>
+                                        <td>{{ \App\Helpers\CurrencyHelper::format($invoice->remaining_amount) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="no-results-cell">No invoices found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

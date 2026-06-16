@@ -106,7 +106,9 @@ class SalesController extends Controller
                     'discount' => $totals['discount'],
                     'vat' => $totals['vat'],
                     'total_amount' => $totals['total_amount'],
-                    'payment_status' => $validated['payment_status'],
+                    'received_amount' => 0,
+                    'remaining_amount' => $totals['total_amount'],
+                    'payment_status' => 'pending',
                     'notes' => $validated['notes'] ?? null,
                     'created_by' => Auth::id(),
                 ]);
@@ -212,9 +214,11 @@ class SalesController extends Controller
                 'discount' => $totals['discount'],
                 'vat' => $totals['vat'],
                 'total_amount' => $totals['total_amount'],
-                'payment_status' => $validated['payment_status'],
+                'remaining_amount' => max(round($totals['total_amount'] - (float) $sale->received_amount, 2), 0),
                 'notes' => $validated['notes'] ?? null,
             ]);
+
+            $sale->syncPaymentState((float) $sale->received_amount);
 
             $sale->items()->delete();
             $sale->items()->createMany($itemRows->map(fn (array $item): array => [

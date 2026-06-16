@@ -27,8 +27,7 @@
                 ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
                 ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
-                ['label' => 'Payments', 'href' => '#'],
-                ['label' => 'QR Scanner', 'href' => '#'],
+                ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
                 ['label' => 'Reports', 'href' => '#'],
                 ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
                 ['label' => 'Users & Roles', 'href' => '#'],
@@ -41,8 +40,7 @@
                 ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
                 ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
-                ['label' => 'Payments', 'href' => '#'],
-                ['label' => 'QR Scanner', 'href' => '#'],
+                ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
                 ['label' => 'Reports', 'href' => '#'],
                 ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
             ];
@@ -51,7 +49,7 @@
                 ['label' => 'Dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
                 ['label' => 'My Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
                 ['label' => 'My Purchases', 'href' => '#'],
-                ['label' => 'My Payments', 'href' => '#'],
+                ['label' => 'My Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
                 ['label' => 'My Invoices', 'href' => '#'],
                 ['label' => 'Profile', 'href' => route('profile.edit')],
             ];

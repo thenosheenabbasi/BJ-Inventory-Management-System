@@ -146,9 +146,7 @@
         }
 
         .top-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            display: block;
         }
 
         .section {
@@ -156,6 +154,13 @@
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.86);
             overflow: hidden;
+        }
+
+        .customer-details {
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            overflow: visible;
         }
 
         .section-title {
@@ -166,6 +171,12 @@
             font-size: 12px;
             font-weight: 800;
             text-transform: uppercase;
+        }
+
+        .customer-details .section-title {
+            padding: 0 0 10px;
+            background: transparent;
+            border-bottom: 1px solid var(--line);
         }
 
         .info-grid {
@@ -182,6 +193,22 @@
 
         .info:nth-child(odd) {
             border-right: 1px solid var(--line);
+        }
+
+        .customer-details .info-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            padding-top: 12px;
+        }
+
+        .customer-details .info {
+            min-height: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .customer-details .info:nth-child(odd) {
+            border-right: 0;
         }
 
         .info-full {
@@ -207,6 +234,10 @@
 
         .block {
             margin-top: 18px;
+        }
+
+        .items-section {
+            margin-top: 52px;
         }
 
         table {
@@ -348,12 +379,8 @@
                 box-shadow: none;
             }
 
-            .top-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .info-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+            .customer-details .info-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
         }
     </style>
@@ -370,7 +397,6 @@
                 <div class="brand">
                     <h1>{{ $brandName }}</h1>
                     <p>Inventory Management System</p>
-                    <p>Battery Sale Slip</p>
                 </div>
                 <div class="meta">
                     <p>Sale No</p>
@@ -381,7 +407,7 @@
 
             <div class="slip-body">
                 <div class="top-grid">
-                    <div class="section">
+                    <div class="customer-details">
                         <div class="section-title">Customer Information</div>
                         <div class="info-grid">
                             <div class="info">
@@ -389,34 +415,12 @@
                                 <strong>{{ $customerName }}</strong>
                             </div>
                             <div class="info">
-                                <span>Customer Code</span>
-                                <strong>{{ $sale->customer?->customer_code ?: '-' }}</strong>
-                            </div>
-                            <div class="info">
                                 <span>Phone</span>
                                 <strong>{{ $sale->customer?->phone ?: '-' }}</strong>
                             </div>
                             <div class="info">
-                                <span>WhatsApp</span>
-                                <strong>{{ $sale->customer?->whatsapp ?: '-' }}</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">Sale Information</div>
-                        <div class="info-grid">
-                            <div class="info">
                                 <span>Payment Status</span>
                                 <strong>{{ $sale->paymentStatusLabel() }}</strong>
-                            </div>
-                            <div class="info">
-                                <span>Created Date</span>
-                                <strong>{{ $sale->created_at?->format('d M Y, h:i A') ?: '-' }}</strong>
-                            </div>
-                            <div class="info">
-                                <span>Created By</span>
-                                <strong>{{ $sale->createdBy?->name ?: '-' }}</strong>
                             </div>
                             <div class="info">
                                 <span>Total Items</span>
@@ -426,7 +430,7 @@
                     </div>
                 </div>
 
-                <div class="section block">
+                <div class="section block items-section">
                     <div class="section-title">Items</div>
                     <table>
                         <thead>
@@ -462,19 +466,10 @@
                         <span>Discount</span>
                         <strong>{{ \App\Helpers\CurrencyHelper::format($sale->discount) }}</strong>
                     </div>
-                    <div class="total-row">
-                        <span>VAT</span>
-                        <strong>{{ \App\Helpers\CurrencyHelper::format($sale->vat) }}</strong>
-                    </div>
                     <div class="total-row grand-total">
                         <span>Grand Total</span>
                         <strong>{{ \App\Helpers\CurrencyHelper::format($sale->total_amount) }}</strong>
                     </div>
-                </div>
-
-                <div class="section block">
-                    <div class="section-title">Notes</div>
-                    <div class="note">{{ $sale->notes ?: 'No notes added for this sale.' }}</div>
                 </div>
 
                 <div class="signature-grid">

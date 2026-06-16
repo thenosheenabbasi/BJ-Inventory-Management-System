@@ -25,7 +25,7 @@
                 <table class="module-table customers-modern-table sales-modern-table">
                     <thead>
                         <tr>
-                            <th>Sale Number</th>
+                            <th>Code</th>
                             <th>Customer</th>
                             <th>Items</th>
                             <th>Total Amount</th>

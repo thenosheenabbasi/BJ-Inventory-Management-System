@@ -16,6 +16,8 @@ class Sale extends Model
         'discount',
         'vat',
         'total_amount',
+        'received_amount',
+        'remaining_amount',
         'payment_status',
         'notes',
         'created_by',
@@ -28,6 +30,8 @@ class Sale extends Model
             'discount' => 'decimal:2',
             'vat' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'received_amount' => 'decimal:2',
+            'remaining_amount' => 'decimal:2',
         ];
     }
 
@@ -44,6 +48,31 @@ class Sale extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function paymentAllocations()
+    {
+        return $this->hasMany(PaymentAllocation::class, 'invoice_id');
+    }
+
+    public function payments()
+    {
+        return $this->belongsToMany(Payment::class, 'payment_allocations', 'invoice_id', 'payment_id')
+            ->withPivot('allocated_amount')
+            ->withTimestamps();
+    }
+
+    public function syncPaymentState(?float $receivedAmount = null): void
+    {
+        $received = round($receivedAmount ?? (float) $this->paymentAllocations()->sum('allocated_amount'), 2);
+        $total = round((float) $this->total_amount, 2);
+        $remaining = round(max($total - $received, 0), 2);
+
+        $this->forceFill([
+            'received_amount' => $received,
+            'remaining_amount' => $remaining,
+            'payment_status' => $remaining <= 0.00001 ? 'paid' : ($received > 0 ? 'partial' : 'pending'),
+        ])->save();
     }
 
     public static function paymentStatuses(): array

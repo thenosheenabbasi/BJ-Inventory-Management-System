@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BatteryInventoryController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RepairJobController;
 use App\Http\Controllers\SalesController;
@@ -103,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::get('sales/{sale}/slip', [SalesController::class, 'slip'])
         ->name('sales.slip');
     Route::resource('sales', SalesController::class);
+    Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

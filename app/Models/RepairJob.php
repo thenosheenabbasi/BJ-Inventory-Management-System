@@ -55,6 +55,11 @@ class RepairJob extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function paymentAllocations()
+    {
+        return $this->hasMany(PaymentAllocation::class);
+    }
+
     public function qrCode()
     {
         return $this->hasOne(QrCode::class);
@@ -62,7 +67,21 @@ class RepairJob extends Model
 
     public function remainingAmount(): float
     {
-        return max((float) $this->estimated_cost - (float) $this->advance_payment, 0);
+        return max((float) $this->estimated_cost - $this->paidAmount(), 0);
+    }
+
+    public function paidAmount(): float
+    {
+        return min((float) $this->estimated_cost, (float) $this->advance_payment + $this->allocatedPaymentAmount());
+    }
+
+    public function allocatedPaymentAmount(): float
+    {
+        if (array_key_exists('allocated_payment_amount', $this->attributes)) {
+            return (float) $this->attributes['allocated_payment_amount'];
+        }
+
+        return (float) $this->paymentAllocations()->sum('allocated_amount');
     }
 
     public function statusLabel(): string

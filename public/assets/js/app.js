@@ -57,7 +57,7 @@
                 title: titles[message.type] || 'Message',
                 text: message.text,
                 icon: message.type,
-                confirmButtonColor: '#f5a400'
+                confirmButtonColor: '#272757'
             });
             return;
         }
@@ -263,6 +263,10 @@
                 form.dataset.confirmHandler = 'true';
 
             form.addEventListener('submit', function (event) {
+                if (event.defaultPrevented) {
+                    return;
+                }
+
                 if (form.dataset.confirmed === 'true') {
                     return;
                 }
@@ -281,8 +285,8 @@
                     showCancelButton: true,
                     confirmButtonText: config.confirmButtonText,
                     cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#f5a400',
-                    cancelButtonColor: '#07111f',
+                    confirmButtonColor: '#272757',
+                    cancelButtonColor: '#111827',
                     reverseButtons: true,
                     focusCancel: true
                 }).then(function (result) {
@@ -600,6 +604,242 @@
         });
     }
 
+    function initPaymentAllocations() {
+        document.querySelectorAll('[data-payment-form]').forEach(function (form) {
+            var amountInput = form.querySelector('[data-payment-amount]');
+            var modeInputs = Array.prototype.slice.call(form.querySelectorAll('[data-payment-mode]'));
+            var allocationInputs = Array.prototype.slice.call(form.querySelectorAll('[data-payment-allocation]'));
+            var rows = Array.prototype.slice.call(form.querySelectorAll('[data-payment-invoice-row]'));
+            var allocatedTotalOutputs = Array.prototype.slice.call(form.querySelectorAll('[data-payment-allocated-total]'));
+            var remainingAfterTotalOutputs = Array.prototype.slice.call(form.querySelectorAll('[data-payment-remaining-after-total]'));
+            var summaryRow = form.querySelector('[data-payment-summary-row]');
+            var summaryReceived = form.querySelector('[data-payment-summary-received]');
+            var summaryRemaining = form.querySelector('[data-payment-summary-remaining]');
+
+            if (!amountInput || (allocationInputs.length === 0 && !summaryRow)) {
+                return;
+            }
+
+            function parseAmount(value) {
+                var amount = Number.parseFloat(value);
+                return Number.isFinite(amount) ? amount : 0;
+            }
+
+            function rounded(amount) {
+                return Math.round((amount + Number.EPSILON) * 100) / 100;
+            }
+
+            function currentMode() {
+                var checked = modeInputs.find(function (input) {
+                    return input.checked;
+                });
+
+                return checked ? checked.value : 'auto';
+            }
+
+            function invoiceRemaining(row) {
+                return rounded(Math.max(parseAmount(row.dataset.remaining), 0));
+            }
+
+            function setAllocation(input, amount) {
+                input.value = amount > 0 ? rounded(amount).toFixed(2) : '0.00';
+            }
+
+            function formatCurrency(amount) {
+                return 'AED ' + rounded(amount).toLocaleString(undefined, {
+                    minimumFractionDigits: rounded(amount) % 1 === 0 ? 0 : 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            function updatePaymentSummary() {
+                if (!summaryRow) {
+                    return;
+                }
+
+                var totalPending = rounded(Math.max(parseAmount(summaryRow.dataset.totalPending), 0));
+                var received = rounded(Math.max(parseAmount(amountInput.value), 0));
+                var applied = Math.min(received, totalPending);
+                var remaining = rounded(Math.max(totalPending - applied, 0));
+
+                if (summaryReceived) {
+                    summaryReceived.textContent = formatCurrency(applied);
+                }
+
+                if (summaryRemaining) {
+                    summaryRemaining.textContent = formatCurrency(remaining);
+                }
+            }
+
+            function updateAllocatedTotal() {
+                var allocatedTotal = allocationInputs.reduce(function (total, input) {
+                    return rounded(total + Math.max(parseAmount(input.value), 0));
+                }, 0);
+                var remainingAfterTotal = 0;
+
+                rows.forEach(function (row) {
+                    var input = row.querySelector('[data-payment-allocation]');
+                    var rowAfter = row.querySelector('[data-payment-row-after]');
+                    var remaining = invoiceRemaining(row);
+                    var allocation = rounded(Math.max(parseAmount(input ? input.value : 0), 0));
+                    var after = rounded(Math.max(remaining - allocation, 0));
+
+                    remainingAfterTotal = rounded(remainingAfterTotal + after);
+
+                    if (rowAfter) {
+                        rowAfter.textContent = formatCurrency(after);
+                    }
+                });
+
+                allocatedTotalOutputs.forEach(function (output) {
+                    output.textContent = formatCurrency(allocatedTotal);
+                });
+
+                remainingAfterTotalOutputs.forEach(function (output) {
+                    output.textContent = formatCurrency(remainingAfterTotal);
+                });
+            }
+
+            function autoAllocate() {
+                var remainingPayment = rounded(Math.max(parseAmount(amountInput.value), 0));
+
+                rows.forEach(function (row) {
+                    var input = row.querySelector('[data-payment-allocation]');
+                    var allocated = Math.min(invoiceRemaining(row), remainingPayment);
+
+                    if (!input) {
+                        return;
+                    }
+
+                    setAllocation(input, allocated);
+                    remainingPayment = rounded(remainingPayment - allocated);
+                });
+
+                updateAllocatedTotal();
+            }
+
+            function updateAllocationMode() {
+                var isAuto = currentMode() === 'auto';
+
+                allocationInputs.forEach(function (input) {
+                    input.readOnly = isAuto;
+                    input.classList.toggle('is-readonly', isAuto);
+                });
+
+                if (isAuto) {
+                    autoAllocate();
+                    return;
+                }
+
+                updateAllocatedTotal();
+            }
+
+            function validateAllocation() {
+                var paymentAmount = rounded(Math.max(parseAmount(amountInput.value), 0));
+                var allocatedTotal = 0;
+                var invalidInput = null;
+
+                if (summaryRow && allocationInputs.length === 0) {
+                    var totalPending = rounded(Math.max(parseAmount(summaryRow.dataset.totalPending), 0));
+
+                    if (paymentAmount <= 0) {
+                        if (window.toastr) {
+                            window.toastr.error('Received amount must be greater than zero.');
+                        }
+                        amountInput.focus();
+                        return false;
+                    }
+
+                    if (paymentAmount > totalPending) {
+                        if (window.toastr) {
+                            window.toastr.error('Received amount cannot exceed total pending amount.');
+                        }
+                        amountInput.focus();
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                if (currentMode() === 'auto') {
+                    autoAllocate();
+                }
+
+                rows.forEach(function (row) {
+                    var input = row.querySelector('[data-payment-allocation]');
+                    var allocation = rounded(Math.max(parseAmount(input ? input.value : 0), 0));
+                    var remaining = invoiceRemaining(row);
+
+                    if (allocation > remaining) {
+                        invalidInput = input;
+                    }
+
+                    allocatedTotal = rounded(allocatedTotal + allocation);
+                });
+
+                if (paymentAmount <= 0) {
+                    if (window.toastr) {
+                        window.toastr.error('Payment amount must be greater than zero.');
+                    }
+                    amountInput.focus();
+                    return false;
+                }
+
+                if (invalidInput) {
+                    if (window.toastr) {
+                        window.toastr.error('Allocation cannot exceed invoice remaining amount.');
+                    }
+                    invalidInput.focus();
+                    return false;
+                }
+
+                if (Math.abs(allocatedTotal - paymentAmount) > 0.009) {
+                    if (window.toastr) {
+                        window.toastr.error('Total allocation must equal payment amount.');
+                    }
+                    amountInput.focus();
+                    return false;
+                }
+
+                return true;
+            }
+
+            amountInput.addEventListener('input', function () {
+                updatePaymentSummary();
+
+                if (currentMode() === 'auto') {
+                    autoAllocate();
+                }
+            });
+
+            modeInputs.forEach(function (input) {
+                input.addEventListener('change', updateAllocationMode);
+            });
+
+            allocationInputs.forEach(function (input) {
+                input.addEventListener('input', function () {
+                    var max = parseAmount(input.getAttribute('max'));
+                    var value = parseAmount(input.value);
+
+                    if (value > max) {
+                        input.value = max.toFixed(2);
+                    }
+
+                    updateAllocatedTotal();
+                });
+            });
+
+            form.addEventListener('submit', function (event) {
+                if (!validateAllocation()) {
+                    event.preventDefault();
+                }
+            });
+
+            updatePaymentSummary();
+            updateAllocationMode();
+        });
+    }
+
     function initPasswordToggles() {
         var eyeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
         var eyeOffIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"/><path d="M9.88 5.09A10.4 10.4 0 0 1 12 4.87c6.5 0 10 7.13 10 7.13a18.2 18.2 0 0 1-2.51 3.55"/><path d="M6.61 6.61A17.8 17.8 0 0 0 2 12s3.5 7.13 10 7.13a10.6 10.6 0 0 0 4.23-.88"/></svg>';
@@ -629,6 +869,7 @@
         configureToastr();
         initSidebar();
         initProfileDropdown();
+        initPaymentAllocations();
         initActionConfirmations();
         initCustomerSearch();
         initCustomerDetailsModals();

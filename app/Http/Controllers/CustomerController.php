@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Payment;
+use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -94,10 +96,29 @@ class CustomerController extends Controller
         $this->authorizeStaff();
 
         $customer->load(['user', 'createdBy']);
+        $paymentHistory = Payment::query()
+            ->whereNull('repair_job_id')
+            ->where('customer_id', $customer->id)
+            ->with(['allocations.invoice'])
+            ->latest('payment_date')
+            ->latest()
+            ->limit(8)
+            ->get();
+        $invoiceHistory = Sale::query()
+            ->where('customer_id', $customer->id)
+            ->latest()
+            ->limit(8)
+            ->get();
 
         return view('customers.show', [
             'customer' => $customer,
             'canDelete' => $this->isAdmin(),
+            'totalPaid' => Payment::whereNull('repair_job_id')
+                ->where('customer_id', $customer->id)
+                ->sum('total_payment_amount'),
+            'outstandingBalance' => Sale::where('customer_id', $customer->id)->sum('remaining_amount'),
+            'paymentHistory' => $paymentHistory,
+            'invoiceHistory' => $invoiceHistory,
         ]);
     }
 
