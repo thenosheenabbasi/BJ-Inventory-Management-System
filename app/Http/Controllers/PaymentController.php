@@ -206,7 +206,8 @@ class PaymentController extends Controller
             },
         ]);
 
-        $invoiceRows = $customer->sales
+        $saleInvoiceRows = $customer->sales
+            ->toBase()
             ->map(function (Sale $sale): array {
                 $itemLines = $sale->items
                     ->map(function ($item): array {
@@ -230,8 +231,11 @@ class PaymentController extends Controller
                     'received' => round((float) $sale->received_amount, 2),
                     'remaining' => round((float) $sale->remaining_amount, 2),
                 ];
-            })
-            ->merge($customer->repairJobs->map(fn (RepairJob $repairJob): array => [
+            });
+
+        $repairInvoiceRows = $customer->repairJobs
+            ->toBase()
+            ->map(fn (RepairJob $repairJob): array => [
                 'number' => $repairJob->repair_number,
                 'date' => $repairJob->created_at,
                 'details' => [$repairJob->battery_details ?: 'Repair invoice'],
@@ -240,7 +244,10 @@ class PaymentController extends Controller
                 'total' => round((float) $repairJob->estimated_cost, 2),
                 'received' => round($repairJob->paidAmount(), 2),
                 'remaining' => round($repairJob->remainingAmount(), 2),
-            ]))
+            ]);
+
+        $invoiceRows = $saleInvoiceRows
+            ->merge($repairInvoiceRows)
             ->sortBy([
                 ['date', 'asc'],
                 ['number', 'asc'],

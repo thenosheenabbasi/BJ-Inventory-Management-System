@@ -87,6 +87,7 @@ class ReportController extends Controller
                 },
             ])
             ->get()
+            ->toBase()
             ->map(fn (Customer $customer): array => [
                 'customer' => $customer,
                 'outstanding' => $customer->outstandingBalanceTotal(),
