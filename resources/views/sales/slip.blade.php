@@ -82,21 +82,6 @@
             position: relative;
         }
 
-        .slip::before {
-            content: "M. Bilal Jamshed";
-            position: absolute;
-            top: 55%;
-            left: 50%;
-            width: 100%;
-            text-align: center;
-            color: rgba(39, 39, 87, 0.08);
-            font-size: 54px;
-            font-weight: 800;
-            text-transform: uppercase;
-            transform: translate(-50%, -50%) rotate(-8deg);
-            pointer-events: none;
-        }
-
         .slip-header,
         .slip-body {
             position: relative;
@@ -387,7 +372,7 @@
 </head>
 <body>
     <div class="toolbar">
-        <a href="{{ route('sales.show', $sale) }}" class="btn">Back</a>
+        <a href="{{ route('sales.index') }}" class="btn">Back</a>
         <button type="button" class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
     </div>
 

@@ -10,6 +10,9 @@
             </div>
             <div class="module-actions">
                 <a href="{{ route('payments.index') }}" class="btn btn-light">Back</a>
+                @if ($payment->customer)
+                    <a href="{{ route('payments.slip', $payment->customer) }}" class="btn btn-light" target="_blank">Print Slip</a>
+                @endif
                 @if ($canCreate)
                     <a href="{{ route('payments.create', ['customer_id' => $payment->customer_id]) }}" class="btn btn-brand">Receive More</a>
                 @endif

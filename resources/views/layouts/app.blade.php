@@ -28,7 +28,7 @@
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
                 ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
                 ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'Reports', 'href' => '#'],
+                ['label' => 'Reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
                 ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
                 ['label' => 'Users & Roles', 'href' => '#'],
                 ['label' => 'Settings', 'href' => '#'],
@@ -41,7 +41,7 @@
                 ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
                 ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
                 ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'Reports', 'href' => '#'],
+                ['label' => 'Reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
                 ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
             ];
         } else {

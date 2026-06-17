@@ -91,35 +91,6 @@
             print-color-adjust: exact;
         }
 
-        .slip::before {
-            content: "M. Bilal Jamshed";
-            position: absolute;
-            top: 56%;
-            left: 50%;
-            width: 100%;
-            text-align: center;
-            color: rgba(39, 39, 87, 0.12);
-            font-size: 58px;
-            font-weight: 800;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            transform: translate(-50%, -50%) rotate(-8deg);
-            transform-origin: center;
-            pointer-events: none;
-        }
-
-        .slip::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                repeating-linear-gradient(135deg, rgba(39, 39, 87, 0.04) 0 1px, transparent 1px 18px);
-            background-position: 0 0;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            pointer-events: none;
-        }
-
         .slip-header,
         .slip-body {
             position: relative;

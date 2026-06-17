@@ -61,6 +61,9 @@
                                         <button type="button" class="action-btn icon-action" title="View payment" aria-label="View payment" data-bs-toggle="modal" data-bs-target="#paymentCustomerModal-{{ $customer->id }}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
                                         </button>
+                                        <a href="{{ route('payments.slip', $customer) }}" class="action-btn icon-action" title="Print payment slip" aria-label="Print payment slip" target="_blank">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -190,6 +193,7 @@
                         </div>
 
                         <div class="customer-modal-footer">
+                            <a href="{{ route('payments.slip', $customer) }}" class="btn btn-brand" target="_blank">Print Slip</a>
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>

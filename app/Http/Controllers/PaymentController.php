@@ -182,6 +182,91 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function slip(Customer $customer): View
+    {
+        $this->authorizeCustomerPaymentAccess($customer);
+
+        $customer->load([
+            'sales' => function ($query) {
+                $query->with('items.battery')->orderBy('created_at')->orderBy('id');
+            },
+            'repairJobs' => function ($query) {
+                $query
+                    ->withSum('paymentAllocations as allocated_payment_amount', 'allocated_amount')
+                    ->orderBy('created_at')
+                    ->orderBy('id');
+            },
+            'payments' => function ($query) {
+                $query
+                    ->whereNull('repair_job_id')
+                    ->with(['createdBy', 'allocations.invoice', 'allocations.repairJob'])
+                    ->orderBy('payment_date')
+                    ->orderBy('created_at')
+                    ->orderBy('id');
+            },
+        ]);
+
+        $invoiceRows = $customer->sales
+            ->map(function (Sale $sale): array {
+                $itemLines = $sale->items
+                    ->map(function ($item): array {
+                        $batteryName = trim((string) ($item->battery?->brand.' '.$item->battery?->model));
+
+                        return [
+                            'details' => $batteryName !== '' ? $batteryName : 'Battery',
+                            'quantity' => (int) $item->quantity,
+                            'unit_price' => round((float) $item->unit_price, 2),
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'number' => $sale->sale_number,
+                    'date' => $sale->created_at,
+                    'details' => $itemLines->isNotEmpty() ? $itemLines->pluck('details')->all() : ['Sale invoice'],
+                    'quantities' => $itemLines->isNotEmpty() ? $itemLines->pluck('quantity')->all() : [0],
+                    'unit_prices' => $itemLines->isNotEmpty() ? $itemLines->pluck('unit_price')->all() : [0],
+                    'total' => round((float) $sale->total_amount, 2),
+                    'received' => round((float) $sale->received_amount, 2),
+                    'remaining' => round((float) $sale->remaining_amount, 2),
+                ];
+            })
+            ->merge($customer->repairJobs->map(fn (RepairJob $repairJob): array => [
+                'number' => $repairJob->repair_number,
+                'date' => $repairJob->created_at,
+                'details' => [$repairJob->battery_details ?: 'Repair invoice'],
+                'quantities' => [(int) ($repairJob->quantity ?: 1)],
+                'unit_prices' => [round((float) ($repairJob->unit_price ?: $repairJob->estimated_cost), 2)],
+                'total' => round((float) $repairJob->estimated_cost, 2),
+                'received' => round($repairJob->paidAmount(), 2),
+                'remaining' => round($repairJob->remainingAmount(), 2),
+            ]))
+            ->sortBy([
+                ['date', 'asc'],
+                ['number', 'asc'],
+            ])
+            ->values();
+
+        $summary = [
+            'invoice_count' => $invoiceRows->count(),
+            'invoice_total' => round((float) $invoiceRows->sum('total'), 2),
+            'received_total' => round((float) $invoiceRows->sum('received'), 2),
+            'remaining_total' => round((float) $invoiceRows->sum('remaining'), 2),
+            'last_payment' => $customer->latestPaymentRecord(),
+        ];
+
+        return view('payments.slip', [
+            'customer' => $customer,
+            'invoiceRows' => $invoiceRows,
+            'payments' => $customer->paymentRecords()->sortBy([
+                ['payment_date', 'asc'],
+                ['created_at', 'asc'],
+                ['id', 'asc'],
+            ])->values(),
+            'summary' => $summary,
+        ]);
+    }
+
     private function pendingInvoicesForCustomer(int $customerId, bool $lockForUpdate = false): Collection
     {
         $salesQuery = Sale::query()
@@ -367,6 +452,20 @@ class PaymentController extends Controller
         abort_unless(
             $user?->role === User::ROLE_CUSTOMER
             && $payment?->customer?->user_id === $user->id,
+            403
+        );
+    }
+
+    private function authorizeCustomerPaymentAccess(Customer $customer): void
+    {
+        $user = Auth::user();
+
+        if (in_array($user?->role, [User::ROLE_ADMIN, User::ROLE_MANAGER], true)) {
+            return;
+        }
+
+        abort_unless(
+            $user?->role === User::ROLE_CUSTOMER && $customer->user_id === $user->id,
             403
         );
     }
