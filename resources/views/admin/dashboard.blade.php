@@ -71,9 +71,9 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Low Stock Items</p>
-                    <p class="kpi-value">{{ number_format($dashboardStats['lowStockBatteries'] ?? 0) }}</p>
-                    <p class="kpi-trend text-warning">Needs reorder review</p>
+                    <p class="kpi-label">Monthly Pending</p>
+                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyPendingTotal'] ?? 0) }}</p>
+                    <p class="kpi-trend text-warning">Sale + repair pending this month</p>
                 </div>
             </article>
 
@@ -86,9 +86,9 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Today Repair Amount</p>
-                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['todayRepairAmount'] ?? 0) }}</p>
-                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['todayRepairPaid'] ?? 0) }} collected today</p>
+                    <p class="kpi-label">Today Business</p>
+                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['todayBusinessAmount'] ?? 0) }}</p>
+                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['todayBusinessReceived'] ?? 0) }} received today</p>
                 </div>
             </article>
 
@@ -100,9 +100,9 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Balance Due</p>
-                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['pendingRepairPayments'] ?? 0) }}</p>
-                    <p class="kpi-trend text-warning">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['totalRepairAdvance'] ?? 0) }} collected</p>
+                    <p class="kpi-label">Total Pending</p>
+                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['totalPendingPayments'] ?? 0) }}</p>
+                    <p class="kpi-trend text-warning">All pending sale + repair balance</p>
                 </div>
             </article>
 
@@ -113,9 +113,9 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Repair Amount</p>
-                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['repairEstimatedTotal'] ?? 0) }}</p>
-                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['totalRepairAdvance'] ?? 0) }} paid · {{ \App\Helpers\CurrencyHelper::format($dashboardStats['pendingRepairPayments'] ?? 0) }} due</p>
+                    <p class="kpi-label">Monthly Total</p>
+                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyBusinessTotal'] ?? 0) }}</p>
+                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySaleAmount'] ?? 0) }} sale · {{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }} repair</p>
                 </div>
             </article>
 
@@ -127,9 +127,9 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Monthly Collection</p>
-                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairPaid'] ?? 0) }}</p>
-                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }} repair amount</p>
+                    <p class="kpi-label">Monthly Earning</p>
+                    <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyEarningTotal'] ?? 0) }}</p>
+                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyPendingTotal'] ?? 0) }} pending this month</p>
                 </div>
             </article>
         </div>
@@ -172,32 +172,32 @@
 
             <div class="table-card table-card-large">
                 <div class="table-card-header">
-                    <h2>Low Stock Batteries</h2>
-                    <a href="{{ route('battery-inventory.index', ['stock' => 'low']) }}" class="view-all-btn btn btn-sm btn-outline-secondary">View All</a>
+                    <h2>Pending Client Amounts</h2>
+                    <a href="{{ route('payments.index') }}" class="view-all-btn btn btn-sm btn-outline-secondary">View Payments</a>
                 </div>
                 <div class="table-scroll">
                     <table>
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Model</th>
-                                <th>Brand</th>
-                                <th>Stock</th>
-                                <th>Alert</th>
+                                <th>Invoice</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Phone</th>
+                                <th class="text-end">Pending</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($lowStockBatteries as $battery)
+                            @forelse ($pendingClientInvoices as $invoice)
                                 <tr>
-                                    <td>{{ $battery->battery_code }}</td>
-                                    <td>{{ $battery->model }}</td>
-                                    <td>{{ $battery->brand }}</td>
-                                    <td>{{ $battery->stock_quantity }}</td>
-                                    <td><span class="status-badge warning">Low Stock</span></td>
+                                    <td><span class="code-text">{{ $invoice['invoice'] }}</span></td>
+                                    <td>{{ $invoice['date']?->format('d M Y') ?: '-' }}</td>
+                                    <td>{{ $invoice['customer'] }}</td>
+                                    <td>{{ $invoice['phone'] }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($invoice['amount']) }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="no-results-cell">No low stock batteries.</td>
+                                    <td colspan="5" class="no-results-cell">No pending client amounts.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -209,37 +209,41 @@
         <div class="dashboard-bottom">
             <div class="table-card summary-card sales-summary-card">
                 <div class="sales-summary-header">
-                    <h2>Repair Battery Calculation Summary</h2>
+                    <h2>Monthly Sale + Repair Summary</h2>
                     <span class="badge-pill success">Live</span>
                 </div>
 
                 <div class="sales-primary-metrics">
                     <div class="sales-metric">
-                        <span>Total Repair Amount</span>
-                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['repairEstimatedTotal'] ?? 0) }}</strong>
+                        <span>Total Month Amount</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyBusinessTotal'] ?? 0) }}</strong>
                     </div>
                     <div class="sales-metric">
-                        <span>Total Paid</span>
-                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['totalRepairAdvance'] ?? 0) }}</strong>
+                        <span>Total Month Earning</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyEarningTotal'] ?? 0) }}</strong>
                     </div>
                     <div class="sales-metric">
-                        <span>Balance Due</span>
-                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['pendingRepairPayments'] ?? 0) }}</strong>
+                        <span>Total Month Pending</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyPendingTotal'] ?? 0) }}</strong>
                     </div>
                 </div>
 
                 <div class="sales-secondary-metrics">
                     <div>
-                        <span>Total Jobs</span>
-                        <strong>{{ number_format($dashboardStats['totalRepairJobs'] ?? 0) }}</strong>
+                        <span>Sale Total</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySaleAmount'] ?? 0) }}</strong>
                     </div>
                     <div>
-                        <span>Pending Repairs</span>
-                        <strong>{{ number_format($dashboardStats['pendingRepairs'] ?? 0) }}</strong>
+                        <span>Repair Total</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }}</strong>
                     </div>
                     <div>
-                        <span>Completed Repairs</span>
-                        <strong>{{ number_format($dashboardStats['completedRepairs'] ?? 0) }}</strong>
+                        <span>Sale Pending</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySalePending'] ?? 0) }}</strong>
+                    </div>
+                    <div>
+                        <span>Repair Pending</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairPending'] ?? 0) }}</strong>
                     </div>
                 </div>
 
