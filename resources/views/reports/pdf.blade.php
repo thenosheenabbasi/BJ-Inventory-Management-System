@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Payment Summary Report</title>
+    <title>{{ $isCustomerReport ? 'My Account Report' : 'Payment Summary Report' }}</title>
     <style>
         @page { margin: 22px 24px; }
         * { box-sizing: border-box; }
@@ -72,7 +72,7 @@
         <tr>
             <td>
                 <p class="company">M. Bilal jamshed</p>
-                <h1>Payment Summary Report</h1>
+                <h1>{{ $isCustomerReport ? 'My Account Report' : 'Payment Summary Report' }}</h1>
                 <span class="muted">Inventory Management System</span>
             </td>
             <td class="header-values">

@@ -48,11 +48,7 @@
         } else {
             $menuItems = [
                 ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
-                ['label' => 'My Repair Battery', 'icon' => 'repair', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'My Purchases', 'icon' => 'sales', 'href' => '#'],
-                ['label' => 'My Payments', 'icon' => 'payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'My Invoices', 'icon' => 'invoice', 'href' => '#'],
-                ['label' => 'Profile', 'icon' => 'profile', 'href' => route('profile.edit')],
+                ['label' => 'My Report', 'icon' => 'reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
             ];
         }
     @endphp
@@ -127,7 +123,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                     </button>
                     <div>
-                        <h1>{{ $pageTitle ?? 'Dashboard' }}</h1>
+                        <h1 class="{{ $userRole === 'customer' ? 'customer-page-title' : '' }}">{{ $pageTitle ?? 'Dashboard' }}</h1>
                         <div class="breadcrumb">{{ $pageBreadcrumb ?? 'Home / Dashboard' }}</div>
                     </div>
                 </div>
@@ -157,23 +153,25 @@
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu profile-menu" aria-labelledby="userProfileDropdown">
-                            <li>
-                                <a class="dropdown-item profile-menu-link" href="{{ route('profile.edit') }}">
-                                    <span class="profile-menu-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.4 1.07V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8.6 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.07-.4H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .4-1.07V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15.4 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.28.6.68.6 1.1H20a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
-                                    </span>
-                                    <span>Account Settings</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item profile-menu-link" href="{{ route('profile.edit') }}#change-password">
-                                    <span class="profile-menu-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                    </span>
-                                    <span>Change Password</span>
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider profile-menu-divider"></li>
+                            @if ($userRole !== 'customer')
+                                <li>
+                                    <a class="dropdown-item profile-menu-link" href="{{ route('profile.edit') }}">
+                                        <span class="profile-menu-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.4 1.07V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8.6 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.07-.4H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .4-1.07V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15.4 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.28.6.68.6 1.1H20a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
+                                        </span>
+                                        <span>Account Settings</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item profile-menu-link" href="{{ route('profile.edit') }}#change-password">
+                                        <span class="profile-menu-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        </span>
+                                        <span>Change Password</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider profile-menu-divider"></li>
+                            @endif
                             <li>
                                 <form method="POST" action="{{ route('logout') }}" class="logout-form">
                                     @csrf

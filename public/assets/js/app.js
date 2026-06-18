@@ -865,6 +865,25 @@
         });
     }
 
+    function initCustomerUserLink() {
+        var roleSelect = document.querySelector('#role');
+        var section = document.querySelector('[data-customer-link-section]');
+        var customerSelect = document.querySelector('[data-customer-link-select]');
+
+        if (!roleSelect || !section || !customerSelect) {
+            return;
+        }
+
+        function updateCustomerLinkVisibility() {
+            var isCustomer = roleSelect.value === 'customer';
+            section.hidden = !isCustomer;
+            customerSelect.required = isCustomer;
+        }
+
+        roleSelect.addEventListener('change', updateCustomerLinkVisibility);
+        updateCustomerLinkVisibility();
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         configureToastr();
         initSidebar();
@@ -876,6 +895,7 @@
         initRepairAmountCalculators();
         initSalesCalculators();
         initPasswordToggles();
+        initCustomerUserLink();
         showFlashMessages();
     });
 })();

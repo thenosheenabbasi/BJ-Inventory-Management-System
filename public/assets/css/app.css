@@ -173,6 +173,229 @@ main {
     margin-top: 18px;
 }
 
+/* Customer account dashboard */
+.customer-dashboard-page {
+    display: grid;
+    gap: 22px;
+}
+
+.customer-dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 22px;
+    border: 1px solid #dfe3eb;
+    border-left: 4px solid #272757;
+    border-radius: 8px;
+    color: #101828;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(16, 24, 40, 0.05);
+}
+
+.customer-dashboard-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0;
+}
+
+.customer-dashboard-heading-icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    place-items: center;
+    border: 1px solid #d9dbea;
+    border-radius: 7px;
+    color: #272757;
+    background: #f5f5fa;
+}
+
+.customer-dashboard-heading-icon svg {
+    width: 23px;
+    height: 23px;
+}
+
+.customer-dashboard-heading > div:last-child > span {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #667085;
+}
+
+.customer-dashboard-welcome h2 {
+    margin: 3px 0 6px;
+    color: #101828;
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.customer-dashboard-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px 16px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.customer-dashboard-meta > span {
+    position: relative;
+}
+
+.customer-dashboard-meta > span:not(:last-child)::after {
+    position: absolute;
+    top: 50%;
+    right: -9px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #c4c9d4;
+    content: "";
+    transform: translateY(-50%);
+}
+
+.customer-dashboard-meta strong {
+    color: #344054;
+    font-weight: 700;
+}
+
+.customer-dashboard-meta .customer-account-status {
+    padding: 3px 8px;
+    border: 1px solid #b7e4c7;
+    border-radius: 999px;
+    color: #16794a;
+    background: #ecfdf3;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.customer-dashboard-meta .customer-account-status::after {
+    display: none;
+}
+
+.customer-dashboard-header-actions {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.customer-dashboard-updated {
+    color: #98a2b3;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.customer-dashboard-welcome .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 9px 15px;
+    border-color: #272757;
+    border-radius: 6px;
+    background: #272757;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.customer-dashboard-welcome .btn:hover {
+    border-color: #1d1d46;
+    background: #1d1d46;
+    color: #fff;
+}
+
+.customer-dashboard-welcome .btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.customer-dashboard-alert {
+    padding: 14px 18px;
+    border: 1px solid #f4c97a;
+    border-radius: 12px;
+    color: #7a4b00;
+    background: #fff8e8;
+}
+
+.customer-kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.customer-pending-card .table-card-header p {
+    margin: 4px 0 0;
+    color: #667085;
+    font-size: 13px;
+}
+
+.customer-invoice-table {
+    min-width: 920px;
+}
+
+.customer-invoice-table th,
+.customer-invoice-table td {
+    text-align: start !important;
+}
+
+.user-customer-link-section[hidden] {
+    display: none;
+}
+
+.form-help {
+    margin-top: 7px;
+    color: #667085;
+    font-size: 12px;
+}
+
+@media (max-width: 1100px) {
+    .customer-kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .customer-dashboard-welcome {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 17px;
+    }
+
+    .customer-dashboard-heading {
+        align-items: flex-start;
+    }
+
+    .customer-dashboard-meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .customer-dashboard-meta > span::after {
+        display: none;
+    }
+
+    .customer-dashboard-header-actions {
+        align-items: stretch;
+    }
+
+    .customer-dashboard-welcome .btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .customer-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Users and roles */
 .users-page,
 .user-entry-page {
@@ -497,6 +720,10 @@ main {
     border: 1px solid var(--border-default);
     border-radius: 8px;
     background: #ffffff;
+}
+
+.erp-report-filter.customer-report-filter {
+    grid-template-columns: repeat(2, minmax(220px, 1fr)) 216px;
 }
 
 .erp-report-field {
@@ -870,6 +1097,14 @@ main {
         grid-column: 1 / -1;
     }
 
+    .erp-report-filter.customer-report-filter {
+        grid-template-columns: repeat(2, minmax(220px, 1fr)) 216px;
+    }
+
+    .erp-report-filter.customer-report-filter .erp-report-actions {
+        grid-column: auto;
+    }
+
     .erp-report-download {
         align-self: flex-end;
     }
@@ -885,6 +1120,10 @@ main {
     }
 
     .erp-report-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .erp-report-filter.customer-report-filter {
         grid-template-columns: 1fr;
     }
 
@@ -2710,6 +2949,13 @@ body.sidebar-open {
     letter-spacing: 0;
     color: var(--text-default);
     text-align: left;
+}
+
+.topbar-left h1.customer-page-title {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .menu-toggle,
@@ -5974,7 +6220,7 @@ body.modal-open {
     min-height: 100vh;
     width: 100%;
     padding: 40px 24px;
-    background: var(--brand-dark);
+    background: #ffffff;
 }
 
 .login-left {
@@ -6007,11 +6253,10 @@ body.modal-open {
     width: 100%;
     max-width: 760px;
     padding: 34px 58px 48px;
-    border: 1px solid rgba(255,255,255,0.34);
+    border: 1px solid #272757;
     border-radius: 24px;
-    background: rgba(255,255,255,0.12);
-    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
-    backdrop-filter: blur(18px);
+    background: #272757;
+    box-shadow: 0 20px 55px rgba(39, 39, 87, 0.18);
 }
 
 .login-heading {
@@ -6131,16 +6376,18 @@ body.modal-open {
     width: 100%;
     min-height: 56px;
     border-radius: 16px;
-    background-color: var(--brand-deep);
-    border: none;
-    color: var(--brand-white);
+    background-color: #ffffff;
+    border: 1px solid #ffffff;
+    color: #272757;
     font-size: 1rem;
     font-weight: 700;
 }
 
 .btn-signin:hover {
-    background-color: #272757;
-    filter: brightness(0.92);
+    border-color: #e8e9f0;
+    background-color: #e8e9f0;
+    color: #272757;
+    filter: none;
 }
 
 .brand-panel {
@@ -6988,7 +7235,7 @@ body {
         justify-content: center;
         min-height: 100svh;
         padding: 24px 16px;
-        background: var(--brand-dark);
+        background: #ffffff;
     }
 
     .login-left {

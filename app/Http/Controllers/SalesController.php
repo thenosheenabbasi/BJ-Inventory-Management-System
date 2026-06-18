@@ -20,10 +20,14 @@ class SalesController extends Controller
     public function index(Request $request): View
     {
         $this->authorizeSalesAccess();
+        $user = Auth::user();
 
         $sales = Sale::query()
             ->with(['customer', 'items.battery', 'createdBy'])
             ->withCount('items')
+            ->when($user?->role === User::ROLE_CUSTOMER, function ($query) use ($user) {
+                $query->whereHas('customer', fn ($customerQuery) => $customerQuery->where('user_id', $user->id));
+            })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->toString();
 
@@ -48,7 +52,9 @@ class SalesController extends Controller
             'canManage' => $this->canManageSales(),
             'canDelete' => $this->isAdmin(),
             'summary' => [
-                'total' => Sale::count(),
+                'total' => $user?->role === User::ROLE_CUSTOMER
+                    ? Sale::whereHas('customer', fn ($query) => $query->where('user_id', $user->id))->count()
+                    : Sale::count(),
             ],
         ]);
     }
@@ -133,7 +139,7 @@ class SalesController extends Controller
 
     public function show(Sale $sale): View
     {
-        $this->authorizeSalesAccess();
+        $this->authorizeSalesAccess($sale);
 
         $sale->load(['customer', 'items.battery', 'createdBy']);
 
@@ -147,7 +153,7 @@ class SalesController extends Controller
 
     public function slip(Sale $sale): View
     {
-        $this->authorizeSalesAccess();
+        $this->authorizeSalesAccess($sale);
 
         $sale->load(['customer', 'items.battery', 'createdBy']);
 
@@ -426,9 +432,23 @@ class SalesController extends Controller
             ->get();
     }
 
-    private function authorizeSalesAccess(): void
+    private function authorizeSalesAccess(?Sale $sale = null): void
     {
-        abort_unless($this->canManageSales(), 403);
+        if ($this->canManageSales()) {
+            return;
+        }
+
+        $user = Auth::user();
+
+        if ($user?->role === User::ROLE_CUSTOMER && $sale === null) {
+            return;
+        }
+
+        abort_unless(
+            $user?->role === User::ROLE_CUSTOMER
+            && $sale?->customer?->user_id === $user->id,
+            403
+        );
     }
 
     private function authorizeSalesManagement(): void

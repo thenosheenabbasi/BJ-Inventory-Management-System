@@ -28,6 +28,7 @@ class ReportController extends Controller
     public function downloadPdf(Request $request): Response
     {
         $this->authorizeReportsAccess();
+        abort_if(Auth::user()?->role === User::ROLE_CUSTOMER, 403);
 
         $data = $this->reportData($request);
         $customerPart = $data['selectedCustomer']
@@ -47,6 +48,7 @@ class ReportController extends Controller
 
     private function reportData(Request $request): array
     {
+        $user = Auth::user();
         $validated = $request->validate([
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date'],
@@ -55,7 +57,9 @@ class ReportController extends Controller
 
         $startDate = Carbon::parse($validated['start_date'] ?? now()->startOfMonth()->toDateString())->startOfDay();
         $endDate = Carbon::parse($validated['end_date'] ?? now()->endOfMonth()->toDateString())->endOfDay();
-        $customerId = isset($validated['customer_id']) ? (int) $validated['customer_id'] : null;
+        $customerId = $user?->role === User::ROLE_CUSTOMER
+            ? $user->customer?->id
+            : (isset($validated['customer_id']) ? (int) $validated['customer_id'] : null);
 
         if ($startDate->greaterThan($endDate)) {
             [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
@@ -63,13 +67,25 @@ class ReportController extends Controller
 
         $salesQuery = Sale::query()
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
+            ->when(
+                $user?->role === User::ROLE_CUSTOMER,
+                fn ($query) => $query->where('customer_id', $customerId ?: 0),
+                fn ($query) => $query->when($customerId, fn ($customerQuery) => $customerQuery->where('customer_id', $customerId))
+            );
         $repairsQuery = RepairJob::query()
             ->withSum('paymentAllocations as allocated_payment_amount', 'allocated_amount')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
+            ->when(
+                $user?->role === User::ROLE_CUSTOMER,
+                fn ($query) => $query->where('customer_id', $customerId ?: 0),
+                fn ($query) => $query->when($customerId, fn ($customerQuery) => $customerQuery->where('customer_id', $customerId))
+            );
         $paymentsQuery = $this->paymentDateRangeQuery(Payment::query(), $startDate, $endDate)
-            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
+            ->when(
+                $user?->role === User::ROLE_CUSTOMER,
+                fn ($query) => $query->where('customer_id', $customerId ?: 0),
+                fn ($query) => $query->when($customerId, fn ($paymentQuery) => $paymentQuery->where('customer_id', $customerId))
+            );
 
         $payments = (clone $paymentsQuery)->get(['amount', 'total_payment_amount']);
         $repairs = (clone $repairsQuery)->get();
@@ -101,8 +117,12 @@ class ReportController extends Controller
         return [
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'customers' => Customer::query()->orderBy('full_name')->get(['id', 'customer_code', 'full_name', 'phone']),
+            'customers' => Customer::query()
+                ->when($user?->role === User::ROLE_CUSTOMER, fn ($query) => $query->where('user_id', $user->id))
+                ->orderBy('full_name')
+                ->get(['id', 'customer_code', 'full_name', 'phone']),
             'selectedCustomer' => $customerId ? Customer::find($customerId) : null,
+            'isCustomerReport' => $user?->role === User::ROLE_CUSTOMER,
             'summary' => [
                 'sales_count' => (clone $salesQuery)->count(),
                 'sales_total' => $salesTotal,
@@ -140,6 +160,10 @@ class ReportController extends Controller
 
     private function authorizeReportsAccess(): void
     {
-        abort_unless(in_array(Auth::user()?->role, [User::ROLE_ADMIN, User::ROLE_MANAGER], true), 403);
+        abort_unless(in_array(Auth::user()?->role, [
+            User::ROLE_ADMIN,
+            User::ROLE_MANAGER,
+            User::ROLE_CUSTOMER,
+        ], true), 403);
     }
 }

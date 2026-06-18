@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\BatteryInventoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\CustomerPortalAccess;
 use App\Models\Customer;
 use App\Models\BatteryInventory;
 use App\Models\Payment;
@@ -21,6 +23,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    if (auth()->user()?->role === \App\Models\User::ROLE_CUSTOMER) {
+        return app(CustomerDashboardController::class)->index();
+    }
+
     $startOfMonth = now()->startOfMonth();
     $endOfMonth = now()->endOfMonth();
     $today = today();
@@ -155,9 +161,9 @@ Route::get('/dashboard', function () {
         'pendingClientInvoices' => $pendingClientInvoices,
         'recentRepairJobs' => $recentRepairJobs,
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', CustomerPortalAccess::class])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', CustomerPortalAccess::class])->group(function () {
     Route::resource('customers', CustomerController::class);
     Route::resource('battery-inventory', BatteryInventoryController::class)
         ->parameters(['battery-inventory' => 'batteryInventory']);

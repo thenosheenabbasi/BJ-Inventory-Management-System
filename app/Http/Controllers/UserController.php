@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -60,6 +62,7 @@ class UserController extends Controller
             ]),
             'roles' => $this->roles(),
             'statuses' => $this->statuses(),
+            'customers' => $this->availableCustomers(),
         ]);
     }
 
@@ -68,9 +71,14 @@ class UserController extends Controller
         $this->authorizeAdmin();
 
         $validated = $this->validatedUserData($request);
+        $customerId = $validated['customer_id'] ?? null;
+        unset($validated['customer_id']);
         $validated['email_verified_at'] = now();
 
-        User::create($validated);
+        DB::transaction(function () use ($validated, $customerId): void {
+            $user = User::create($validated);
+            $this->syncCustomerLink($user, $customerId);
+        });
 
         return redirect()
             ->route('users.index')
@@ -85,6 +93,7 @@ class UserController extends Controller
             'managedUser' => $user,
             'roles' => $this->roles(),
             'statuses' => $this->statuses(),
+            'customers' => $this->availableCustomers($user),
         ]);
     }
 
@@ -109,12 +118,17 @@ class UserController extends Controller
         }
 
         $validated = $this->validatedUserData($request, $user);
+        $customerId = $validated['customer_id'] ?? null;
+        unset($validated['customer_id']);
 
         if (blank($validated['password'] ?? null)) {
             unset($validated['password']);
         }
 
-        $user->update($validated);
+        DB::transaction(function () use ($user, $validated, $customerId): void {
+            $user->update($validated);
+            $this->syncCustomerLink($user, $customerId);
+        });
 
         return redirect()
             ->route('users.index')
@@ -135,6 +149,12 @@ class UserController extends Controller
             ],
             'role' => ['required', Rule::in(array_keys($this->roles()))],
             'status' => ['required', Rule::in(array_keys($this->statuses()))],
+            'customer_id' => [
+                Rule::requiredIf($request->input('role') === User::ROLE_CUSTOMER),
+                'nullable',
+                'integer',
+                'exists:customers,id',
+            ],
             'password' => [
                 $user ? 'nullable' : 'required',
                 'confirmed',
@@ -146,9 +166,44 @@ class UserController extends Controller
             'email.unique' => 'This email address is already in use.',
             'role.in' => 'Please select a valid role.',
             'status.in' => 'Please select a valid status.',
+            'customer_id.required' => 'Please select the customer record for this login.',
+            'customer_id.exists' => 'Please select a valid customer record.',
             'password.confirmed' => 'Password confirmation does not match.',
             'password.min' => 'Password must be at least 8 characters.',
         ]);
+    }
+
+    private function availableCustomers(?User $user = null)
+    {
+        return Customer::query()
+            ->where(function ($query) use ($user) {
+                $query->whereNull('user_id');
+
+                if ($user) {
+                    $query->orWhere('user_id', $user->id);
+                }
+            })
+            ->orderBy('full_name')
+            ->get(['id', 'user_id', 'customer_code', 'full_name', 'phone']);
+    }
+
+    private function syncCustomerLink(User $user, mixed $customerId): void
+    {
+        $user->customer()->update(['user_id' => null]);
+
+        if ($user->role !== User::ROLE_CUSTOMER || ! $customerId) {
+            return;
+        }
+
+        $customer = Customer::query()->lockForUpdate()->findOrFail((int) $customerId);
+
+        if ($customer->user_id && $customer->user_id !== $user->id) {
+            throw ValidationException::withMessages([
+                'customer_id' => 'This customer already has a login account.',
+            ]);
+        }
+
+        $customer->update(['user_id' => $user->id]);
     }
 
     private function authorizeAdmin(): void

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -57,6 +58,42 @@ class UserManagementTest extends TestCase
             'email' => 'manager@example.com',
             'role' => User::ROLE_MANAGER,
             'status' => User::STATUS_ACTIVE,
+        ]);
+    }
+
+    public function test_admin_can_create_customer_login_linked_to_customer_record(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        $customer = Customer::create([
+            'customer_code' => 'CU-1001',
+            'full_name' => 'Customer One',
+            'phone' => '0500000001',
+            'country' => 'UAE',
+            'customer_type' => 'both',
+            'status' => 'active',
+            'created_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('users.store'), [
+                'name' => 'Customer One',
+                'email' => 'customer@example.com',
+                'role' => User::ROLE_CUSTOMER,
+                'status' => User::STATUS_ACTIVE,
+                'customer_id' => $customer->id,
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+            ])
+            ->assertRedirect(route('users.index'));
+
+        $user = User::where('email', 'customer@example.com')->firstOrFail();
+
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'user_id' => $user->id,
         ]);
     }
 

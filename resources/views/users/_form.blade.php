@@ -71,6 +71,42 @@
             </div>
         </section>
 
+        <section
+            class="customer-form-section user-customer-link-section"
+            data-customer-link-section
+            @if (old('role', $managedUser->role) !== \App\Models\User::ROLE_CUSTOMER) hidden @endif
+        >
+            <div class="section-title-row">
+                <div>
+                    <h2>Customer Dashboard Link</h2>
+                    <span class="user-form-optional">Select whose invoices, payments, and report this login can access.</span>
+                </div>
+            </div>
+
+            <div class="customer-form-grid">
+                <div class="form-field form-field-full">
+                    <label for="customer_id" class="form-label">Customer Record <span class="required">*</span></label>
+                    <div class="input-shell select-shell @error('customer_id') is-invalid @enderror">
+                        <span class="input-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
+                        </span>
+                        <select id="customer_id" name="customer_id" class="form-control form-select" data-customer-link-select>
+                            <option value="">Select customer</option>
+                            @foreach ($customers as $customer)
+                                <option value="{{ $customer->id }}" @selected((string) old('customer_id', $managedUser->customer?->id) === (string) $customer->id)>
+                                    {{ $customer->customer_code }} - {{ $customer->full_name }}{{ $customer->phone ? ' ('.$customer->phone.')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('customer_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    @if ($customers->isEmpty())
+                        <div class="form-help">No unlinked customer is available. Create a customer record first.</div>
+                    @endif
+                </div>
+            </div>
+        </section>
+
         <section class="customer-form-section">
             <div class="section-title-row">
                 <h2>{{ $managedUser->exists ? 'Change Password' : 'Login Password' }}</h2>

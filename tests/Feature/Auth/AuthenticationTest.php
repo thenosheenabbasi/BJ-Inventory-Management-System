@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -28,6 +29,42 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_customer_login_ignores_a_previous_admin_only_url(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        $customerUser = User::factory()->create([
+            'role' => User::ROLE_CUSTOMER,
+            'status' => User::STATUS_ACTIVE,
+        ]);
+        Customer::create([
+            'user_id' => $customerUser->id,
+            'customer_code' => 'CU-1001',
+            'full_name' => 'Customer User',
+            'phone' => '0500000001',
+            'country' => 'UAE',
+            'customer_type' => 'both',
+            'status' => 'active',
+            'created_by' => $admin->id,
+        ]);
+
+        $response = $this
+            ->withSession(['url.intended' => route('users.index')])
+            ->post('/login', [
+                'email' => $customerUser->email,
+                'password' => 'password',
+            ]);
+
+        $response->assertRedirect(route('dashboard'));
+
+        $this->actingAs($customerUser)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('My Dashboard');
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
