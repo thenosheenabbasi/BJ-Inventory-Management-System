@@ -128,7 +128,7 @@ class SalesController extends Controller
 
         return redirect()
             ->route('sales.index')
-            ->with('success', 'Sale created successfully.');
+            ->with('success', 'Sale battery created successfully.');
     }
 
     public function show(Sale $sale): View
@@ -233,7 +233,7 @@ class SalesController extends Controller
 
         return redirect()
             ->route('sales.index')
-            ->with('success', 'Sale updated successfully.');
+            ->with('success', 'Sale battery updated successfully.');
     }
 
     public function destroy(Sale $sale): RedirectResponse
@@ -259,7 +259,7 @@ class SalesController extends Controller
 
         return redirect()
             ->route('sales.index')
-            ->with('success', 'Sale deleted successfully.');
+            ->with('success', 'Sale battery deleted successfully.');
     }
 
     private function validatedSaleData(Request $request): array

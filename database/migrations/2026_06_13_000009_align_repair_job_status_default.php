@@ -12,12 +12,20 @@ return new class extends Migration
             return;
         }
 
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE repair_jobs MODIFY status VARCHAR(255) NOT NULL DEFAULT 'received'");
     }
 
     public function down(): void
     {
         if (! Schema::hasTable('repair_jobs') || ! Schema::hasColumn('repair_jobs', 'status')) {
+            return;
+        }
+
+        if (DB::getDriverName() === 'sqlite') {
             return;
         }
 

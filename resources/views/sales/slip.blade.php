@@ -384,7 +384,7 @@
                     <p>Inventory Management System</p>
                 </div>
                 <div class="meta">
-                    <p>Sale No</p>
+                    <p>Sale Battery No</p>
                     <strong>{{ $sale->sale_number }}</strong>
                     <p>{{ now()->format('d M Y, h:i A') }}</p>
                 </div>
@@ -463,7 +463,7 @@
                 </div>
 
                 <div class="footer-note">
-                    Thank you for choosing {{ $brandName }}. Keep this slip for sale confirmation, warranty reference, and payment verification.
+                    Thank you for choosing {{ $brandName }}. Keep this slip for sale battery confirmation, warranty reference, and payment verification.
                 </div>
             </div>
         </section>

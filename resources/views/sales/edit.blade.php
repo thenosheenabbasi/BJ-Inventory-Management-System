@@ -1,13 +1,13 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Edit Sale</x-slot>
-    <x-slot name="pageBreadcrumb">Home / Sales / Edit</x-slot>
+    <x-slot name="pageTitle">Edit Sale Battery</x-slot>
+    <x-slot name="pageBreadcrumb">Home / Sale Battery / Edit</x-slot>
 
     <section class="module-page customer-entry-page sales-entry-page">
         <div class="module-header customer-entry-header">
             <div></div>
             <a href="{{ route('sales.show', $sale) }}" class="btn btn-light back-btn">
                 <span>&larr;</span>
-                Back to Sale Details
+                Back to Sale Battery Details
             </a>
         </div>
 

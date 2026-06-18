@@ -1,6 +1,6 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Sale Details</x-slot>
-    <x-slot name="pageBreadcrumb">Home / Sales / {{ $sale->sale_number }}</x-slot>
+    <x-slot name="pageTitle">Sale Battery Details</x-slot>
+    <x-slot name="pageBreadcrumb">Home / Sale Battery / {{ $sale->sale_number }}</x-slot>
 
     <section class="module-page repair-detail-page sales-detail-page">
         <div class="module-header repair-detail-header">
@@ -12,7 +12,7 @@
                 <a href="{{ route('sales.index') }}" class="btn btn-light">Back</a>
                 <a href="{{ route('sales.slip', $sale) }}" class="btn btn-light" target="_blank">Print Slip</a>
                 @if ($canManage)
-                    <a href="{{ route('sales.edit', $sale) }}" class="btn btn-brand">Edit Sale</a>
+                    <a href="{{ route('sales.edit', $sale) }}" class="btn btn-brand">Edit Sale Battery</a>
                 @endif
                 @if ($canDelete)
                     <form method="POST" action="{{ route('sales.destroy', $sale) }}" class="delete-form">

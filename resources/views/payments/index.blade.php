@@ -42,8 +42,9 @@
                                 $receivedTotal = $customer->receivedPaymentTotal();
                                 $remainingTotal = $customer->outstandingBalanceTotal();
                                 $ledgerTotal = $customer->paymentLedgerTotal();
+                                $hasPendingBalance = floor($remainingTotal) >= 1;
                             @endphp
-                            <tr>
+                            <tr class="{{ $hasPendingBalance ? 'payment-pending-row' : '' }}">
                                 <td><span class="code-text">{{ $latestPayment?->code() ?: $customer->customer_code }}</span></td>
                                 <td>
                                     <div class="customer-name">

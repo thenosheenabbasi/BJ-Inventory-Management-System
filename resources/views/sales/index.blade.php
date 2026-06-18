@@ -1,6 +1,6 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Sales</x-slot>
-    <x-slot name="pageBreadcrumb">Home / Sales</x-slot>
+    <x-slot name="pageTitle">Sale Battery</x-slot>
+    <x-slot name="pageBreadcrumb">Home / Sale Battery</x-slot>
 
     <section class="module-page customers-modern-page sales-modern-page">
         <div class="customer-page-header">
@@ -8,7 +8,7 @@
                 <p>Manage battery sales and customer purchases.</p>
             </div>
             @if ($canManage)
-                <a href="{{ route('sales.create') }}" class="btn btn-brand btn-compact">+ Create Sale</a>
+                <a href="{{ route('sales.create') }}" class="btn btn-brand btn-compact">+ Create Sale Battery</a>
             @endif
         </div>
 
@@ -16,7 +16,7 @@
             <div class="table-card-header customer-records-header customers-modern-card-header">
                 @if ($summary['total'] > 0)
                     <form method="GET" action="{{ route('sales.index') }}" class="customer-search-form">
-                        <input id="search" type="search" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search sales..." aria-label="Sales search">
+                        <input id="search" type="search" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search sale battery..." aria-label="Sale battery search">
                     </form>
                 @endif
             </div>

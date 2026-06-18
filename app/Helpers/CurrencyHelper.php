@@ -17,9 +17,7 @@ class CurrencyHelper
     public static function format(string|int|float $amount): string
     {
         $number = floatval($amount);
-        $formatted = floor($number) === $number
-            ? number_format($number, 0, '.', ',')
-            : number_format($number, 2, '.', ',');
+        $formatted = number_format(floor($number), 0, '.', ',');
 
         return sprintf(config('currency.format', '%s %s'), self::symbol(), $formatted);
     }

@@ -56,7 +56,7 @@
                     </svg>
                 </div>
                 <div class="kpi-content">
-                    <p class="kpi-label">Repair Jobs</p>
+                    <p class="kpi-label">Repair Battery</p>
                     <p class="kpi-value">{{ number_format($dashboardStats['totalRepairJobs'] ?? 0) }}</p>
                     <p class="kpi-trend text-warning">{{ number_format($dashboardStats['pendingRepairs'] ?? 0) }} pending · {{ number_format($dashboardStats['completedRepairs'] ?? 0) }} delivered</p>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="kpi-content">
                     <p class="kpi-label">Total Pending</p>
                     <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['totalPendingPayments'] ?? 0) }}</p>
-                    <p class="kpi-trend text-warning">All pending sale + repair balance</p>
+                    <p class="kpi-trend text-warning">All pending sale battery + repair balance</p>
                 </div>
             </article>
 
@@ -115,7 +115,7 @@
                 <div class="kpi-content">
                     <p class="kpi-label">Monthly Total</p>
                     <p class="kpi-value">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyBusinessTotal'] ?? 0) }}</p>
-                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySaleAmount'] ?? 0) }} sale · {{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }} repair</p>
+                    <p class="kpi-trend text-success">{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySaleAmount'] ?? 0) }} sale battery · {{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }} repair</p>
                 </div>
             </article>
 
@@ -140,7 +140,7 @@
                     <h2>Recent Repair Battery</h2>
                     <a href="{{ route('repair-jobs.index') }}" class="view-all-btn btn btn-sm btn-outline-secondary">View All</a>
                 </div>
-                <div class="table-scroll">
+                <div class="table-scroll dashboard-table-scroller">
                     <table class="dashboard-repair-table">
                         <thead>
                             <tr>
@@ -175,14 +175,13 @@
                     <h2>Pending Client Amounts</h2>
                     <a href="{{ route('payments.index') }}" class="view-all-btn btn btn-sm btn-outline-secondary">View Payments</a>
                 </div>
-                <div class="table-scroll">
-                    <table>
+                <div class="table-scroll dashboard-table-scroller dashboard-pending-scroller">
+                    <table class="dashboard-pending-table">
                         <thead>
                             <tr>
                                 <th>Invoice</th>
                                 <th>Date</th>
                                 <th>Client</th>
-                                <th>Phone</th>
                                 <th class="text-end">Pending</th>
                             </tr>
                         </thead>
@@ -192,12 +191,11 @@
                                     <td><span class="code-text">{{ $invoice['invoice'] }}</span></td>
                                     <td>{{ $invoice['date']?->format('d M Y') ?: '-' }}</td>
                                     <td>{{ $invoice['customer'] }}</td>
-                                    <td>{{ $invoice['phone'] }}</td>
                                     <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($invoice['amount']) }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="no-results-cell">No pending client amounts.</td>
+                                    <td colspan="4" class="no-results-cell">No pending client amounts.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -209,7 +207,7 @@
         <div class="dashboard-bottom">
             <div class="table-card summary-card sales-summary-card">
                 <div class="sales-summary-header">
-                    <h2>Monthly Sale + Repair Summary</h2>
+                    <h2>Monthly Sale Battery + Repair Summary</h2>
                     <span class="badge-pill success">Live</span>
                 </div>
 
@@ -230,7 +228,7 @@
 
                 <div class="sales-secondary-metrics">
                     <div>
-                        <span>Sale Total</span>
+                        <span>Sale Battery Total</span>
                         <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySaleAmount'] ?? 0) }}</strong>
                     </div>
                     <div>
@@ -238,7 +236,7 @@
                         <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlyRepairAmount'] ?? 0) }}</strong>
                     </div>
                     <div>
-                        <span>Sale Pending</span>
+                        <span>Sale Battery Pending</span>
                         <strong>{{ \App\Helpers\CurrencyHelper::format($dashboardStats['monthlySalePending'] ?? 0) }}</strong>
                     </div>
                     <div>

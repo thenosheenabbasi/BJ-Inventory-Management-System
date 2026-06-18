@@ -8,6 +8,7 @@ use App\Http\Controllers\RepairJobController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserController;
 use App\Models\Customer;
 use App\Models\BatteryInventory;
 use App\Models\Payment;
@@ -90,7 +91,6 @@ Route::get('/dashboard', function () {
             'invoice' => $sale->sale_number,
             'date' => $sale->created_at,
             'customer' => $sale->customer?->full_name ?: '-',
-            'phone' => $sale->customer?->phone ?: '-',
             'amount' => round((float) $sale->remaining_amount, 2),
         ]);
     $pendingRepairInvoices = RepairJob::query()
@@ -104,7 +104,6 @@ Route::get('/dashboard', function () {
             'invoice' => $repairJob->repair_number,
             'date' => $repairJob->created_at,
             'customer' => $repairJob->customer?->full_name ?: '-',
-            'phone' => $repairJob->customer?->phone ?: '-',
             'amount' => round($repairJob->remainingAmount(), 2),
         ])
         ->filter(fn (array $invoice): bool => $invoice['amount'] > 0);
@@ -163,6 +162,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('battery-inventory', BatteryInventoryController::class)
         ->parameters(['battery-inventory' => 'batteryInventory']);
     Route::resource('suppliers', SupplierController::class)->except('show');
+    Route::resource('users', UserController::class)->except(['show', 'destroy']);
     Route::resource('repair-jobs', RepairJobController::class)
         ->parameters(['repair-jobs' => 'repairJob']);
     Route::get('repair-jobs/{repairJob}/slip', [RepairJobController::class, 'slip'])
@@ -173,6 +173,8 @@ Route::middleware('auth')->group(function () {
     Route::get('payments/customers/{customer}/slip', [PaymentController::class, 'slip'])
         ->name('payments.slip');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('reports/pdf', [ReportController::class, 'downloadPdf'])
+        ->name('reports.pdf');
     Route::get('reports', [ReportController::class, 'index'])
         ->name('reports.index');
 

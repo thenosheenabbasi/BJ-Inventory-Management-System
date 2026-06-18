@@ -6,6 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ config('app.name', 'BJ Laptop Hub') }}</title>
+        <link rel="icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}?v={{ filemtime(public_path('favicon.png')) }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v={{ filemtime(public_path('favicon.png')) }}">
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-N5vRtFetEfE9OdLDKnsXHpswJ4cyGmX5a8kTzadxi+u0i7GoCmBbJZzZH+OiJhCE" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">

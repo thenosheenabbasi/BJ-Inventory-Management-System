@@ -1,219 +1,250 @@
 <x-app-layout>
-    <x-slot name="pageTitle">Reports</x-slot>
-    <x-slot name="pageBreadcrumb">Home / Reports</x-slot>
+    <x-slot name="pageTitle">Payment Summary Report</x-slot>
+    <x-slot name="pageBreadcrumb">Home / Reports / Payment Summary Report</x-slot>
 
-    <section class="module-page reports-page">
-        <div class="customer-page-header reports-header">
-            <div>
-                <p>Business performance, collections, stock alerts, and outstanding balances.</p>
-            </div>
+    <section class="module-page erp-report-page">
+        <div class="erp-report-commandbar">
+            <a
+                href="{{ route('reports.pdf', request()->only(['customer_id', 'start_date', 'end_date'])) }}"
+                class="btn erp-report-download"
+                title="Download PDF"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3v12"></path>
+                    <path d="m7 10 5 5 5-5"></path>
+                    <path d="M5 21h14"></path>
+                </svg>
+                <span>Download PDF</span>
+            </a>
 
-            <form method="GET" action="{{ route('reports.index') }}" class="reports-filter-form">
-                <div class="reports-date-field">
-                    <label for="start_date">From</label>
+            <form method="GET" action="{{ route('reports.index') }}" class="erp-report-filter">
+                <div class="erp-report-field erp-report-customer">
+                    <label for="customer_id">Customer</label>
+                    <select id="customer_id" name="customer_id" class="form-control form-select">
+                        <option value="">All Customers</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->id }}" @selected((string) request('customer_id') === (string) $customer->id)>
+                                {{ $customer->customer_code }} - {{ $customer->full_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="erp-report-field">
+                    <label for="start_date">From Date</label>
                     <input id="start_date" type="date" name="start_date" value="{{ $startDate->toDateString() }}" class="form-control">
                 </div>
-                <div class="reports-date-field">
-                    <label for="end_date">To</label>
+                <div class="erp-report-field">
+                    <label for="end_date">To Date</label>
                     <input id="end_date" type="date" name="end_date" value="{{ $endDate->toDateString() }}" class="form-control">
                 </div>
-                <button type="submit" class="btn btn-brand">Apply</button>
+                <div class="erp-report-actions">
+                    <button type="submit" class="btn btn-brand">Apply Filter</button>
+                    <a href="{{ route('reports.index') }}" class="btn btn-light">Reset</a>
+                </div>
             </form>
         </div>
 
-        <div class="reports-period">
-            <span>Report Period</span>
-            <strong>{{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}</strong>
-        </div>
+        <div class="erp-report-sheet">
+            <header class="erp-report-header">
+                <div>
+                    <p class="erp-report-company">M. Bilal jamshed</p>
+                    <h2>Payment Summary Report</h2>
+                    <p>Inventory Management System</p>
+                </div>
+                <div class="erp-report-header-values">
+                    <strong>{{ $selectedCustomer?->full_name ?: 'All Customers' }}</strong>
+                    <span>{{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}</span>
+                    <span>{{ $generatedAt->format('d M Y, h:i A') }}</span>
+                </div>
+            </header>
 
-        <div class="repair-detail-summary reports-summary-grid">
-            <div class="repair-metric-card">
-                <span>Gross Business</span>
-                <strong>{{ \App\Helpers\CurrencyHelper::format($summary['gross_business']) }}</strong>
-            </div>
-            <div class="repair-metric-card">
-                <span>Received</span>
-                <strong>{{ \App\Helpers\CurrencyHelper::format($summary['gross_received']) }}</strong>
-            </div>
-            <div class="repair-metric-card">
-                <span>Remaining</span>
-                <strong>{{ \App\Helpers\CurrencyHelper::format($summary['gross_remaining']) }}</strong>
-            </div>
-            <div class="repair-metric-card">
-                <span>Collections</span>
-                <strong>{{ \App\Helpers\CurrencyHelper::format($summary['collection_total']) }}</strong>
-            </div>
-        </div>
-
-        <div class="reports-breakdown-grid">
-            <div class="table-card report-metric-panel">
-                <div class="table-card-header">
-                    <h2>Sales Report</h2>
+            <section class="erp-report-section erp-financial-summary">
+                <div class="erp-report-section-title">
+                    <div>
+                        <h3>Financial Summary</h3>
+                        <p>Payment position for the selected report</p>
+                    </div>
+                    <span>{{ number_format($summary['sales_count'] + $summary['repair_count']) }} invoices</span>
                 </div>
-                <div class="report-lines">
-                    <div><span>Invoices</span><strong>{{ number_format($summary['sales_count']) }}</strong></div>
-                    <div><span>Total</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['sales_total']) }}</strong></div>
-                    <div><span>Received</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['sales_received']) }}</strong></div>
-                    <div><span>Remaining</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['sales_remaining']) }}</strong></div>
-                </div>
-            </div>
-
-            <div class="table-card report-metric-panel">
-                <div class="table-card-header">
-                    <h2>Repair Battery Report</h2>
-                </div>
-                <div class="report-lines">
-                    <div><span>Jobs</span><strong>{{ number_format($summary['repair_count']) }}</strong></div>
-                    <div><span>Total</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['repair_total']) }}</strong></div>
-                    <div><span>Paid</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['repair_paid']) }}</strong></div>
-                    <div><span>Remaining</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['repair_remaining']) }}</strong></div>
-                </div>
-            </div>
-
-            <div class="table-card report-metric-panel">
-                <div class="table-card-header">
-                    <h2>Inventory Report</h2>
-                </div>
-                <div class="report-lines">
-                    <div><span>Stock Qty</span><strong>{{ number_format($summary['inventory_stock']) }}</strong></div>
-                    <div><span>Stock Value</span><strong>{{ \App\Helpers\CurrencyHelper::format($summary['inventory_value']) }}</strong></div>
-                    <div><span>Low Stock</span><strong>{{ number_format($summary['low_stock_count']) }}</strong></div>
-                    <div><span>Payments</span><strong>{{ number_format($summary['collection_count']) }}</strong></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="reports-table-grid">
-            <div class="table-card">
-                <div class="table-card-header">
-                    <h2>Top Selling Batteries</h2>
+                <div class="erp-financial-totals">
+                    <div>
+                        <span>Total Invoiced</span>
+                        <strong>{{ \App\Helpers\CurrencyHelper::format($summary['gross_business']) }}</strong>
+                    </div>
+                    <div>
+                        <span>Total Received</span>
+                        <strong class="is-received">{{ \App\Helpers\CurrencyHelper::format($summary['gross_received']) }}</strong>
+                    </div>
+                    <div>
+                        <span>Outstanding Balance</span>
+                        <strong class="is-pending">{{ \App\Helpers\CurrencyHelper::format($summary['gross_remaining']) }}</strong>
+                    </div>
                 </div>
                 <div class="table-scroll">
-                    <table>
+                    <table class="erp-financial-table">
                         <thead>
                             <tr>
-                                <th>Battery</th>
-                                <th class="text-end">Qty</th>
-                                <th class="text-end">Sales</th>
+                                <th>Category</th>
+                                <th class="text-end">Invoices</th>
+                                <th class="text-end">Invoiced</th>
+                                <th class="text-end">Received</th>
+                                <th class="text-end">Outstanding</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($topSellingBatteries as $item)
-                                <tr>
-                                    <td>
-                                        <span class="code-text">{{ $item->battery?->battery_code ?: '-' }}</span>
-                                        <div>{{ trim(($item->battery?->brand ?: '').' '.($item->battery?->model ?: '')) ?: 'Battery removed' }}</div>
-                                    </td>
-                                    <td class="text-end">{{ number_format($item->quantity_sold) }}</td>
-                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($item->sales_total) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="no-results-cell">No sales found for this period.</td>
-                                </tr>
-                            @endforelse
+                            <tr>
+                                <td><strong>Sale Battery</strong></td>
+                                <td class="text-end">{{ number_format($summary['sales_count']) }}</td>
+                                <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($summary['sales_total']) }}</td>
+                                <td class="text-end is-received">{{ \App\Helpers\CurrencyHelper::format($summary['sales_received']) }}</td>
+                                <td class="text-end is-pending">{{ \App\Helpers\CurrencyHelper::format($summary['sales_remaining']) }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Repair Battery</strong></td>
+                                <td class="text-end">{{ number_format($summary['repair_count']) }}</td>
+                                <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($summary['repair_total']) }}</td>
+                                <td class="text-end is-received">{{ \App\Helpers\CurrencyHelper::format($summary['repair_paid']) }}</td>
+                                <td class="text-end is-pending">{{ \App\Helpers\CurrencyHelper::format($summary['repair_remaining']) }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
 
-            <div class="table-card">
-                <div class="table-card-header">
-                    <h2>Recent Collections</h2>
+            <section class="erp-report-section erp-report-detail-section">
+                <div class="erp-report-section-title">
+                    <h3>Sale Battery Invoices</h3>
+                    <span>{{ number_format($saleDetails->count()) }} records</span>
                 </div>
-                <div class="table-scroll">
-                    <table>
+                <div class="table-scroll erp-report-table-scroll">
+                    <table class="erp-report-table">
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Receipt</th>
+                                <th>Invoice</th>
                                 <th>Customer</th>
-                                <th class="text-end">Amount</th>
+                                <th>Battery Details</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">Received</th>
+                                <th class="text-end">Remaining</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($recentCollections as $payment)
+                            @forelse ($saleDetails as $sale)
+                                <tr>
+                                    <td>{{ $sale->created_at?->format('d M Y') ?: '-' }}</td>
+                                    <td><strong class="erp-report-code">{{ $sale->sale_number }}</strong></td>
+                                    <td>{{ $sale->customer?->full_name ?: '-' }}</td>
+                                    <td>
+                                        @forelse ($sale->items as $item)
+                                            <div>{{ trim(($item->battery?->brand ?: '').' '.($item->battery?->model ?: '')) ?: 'Battery removed' }}</div>
+                                        @empty
+                                            -
+                                        @endforelse
+                                    </td>
+                                    <td class="text-end">
+                                        @forelse ($sale->items as $item)
+                                            <div>{{ number_format($item->quantity) }}</div>
+                                        @empty
+                                            -
+                                        @endforelse
+                                    </td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($sale->total_amount) }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($sale->received_amount) }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($sale->remaining_amount) }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="8" class="erp-report-empty">No sale battery records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="erp-report-section erp-report-detail-section">
+                <div class="erp-report-section-title">
+                    <h3>Repair Battery Invoices</h3>
+                    <span>{{ number_format($repairDetails->count()) }} records</span>
+                </div>
+                <div class="table-scroll erp-report-table-scroll">
+                    <table class="erp-report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Invoice</th>
+                                <th>Customer</th>
+                                <th>Battery Details</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">Received</th>
+                                <th class="text-end">Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($repairDetails as $repair)
+                                <tr>
+                                    <td>{{ $repair->created_at?->format('d M Y') ?: '-' }}</td>
+                                    <td><strong class="erp-report-code">{{ $repair->repair_number }}</strong></td>
+                                    <td>{{ $repair->customer?->full_name ?: '-' }}</td>
+                                    <td>{{ $repair->battery_details ?: '-' }}</td>
+                                    <td class="text-end">{{ number_format($repair->quantity ?: 1) }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($repair->estimated_cost) }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($repair->paidAmount()) }}</td>
+                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($repair->remainingAmount()) }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="8" class="erp-report-empty">No repair battery records found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="erp-report-section erp-report-detail-section">
+                <div class="erp-report-section-title">
+                    <h3>Payment Received Record</h3>
+                    <span>{{ number_format($paymentDetails->count()) }} entries</span>
+                </div>
+                <div class="table-scroll erp-report-table-scroll">
+                    <table class="erp-report-table">
+                        <thead>
+                            <tr>
+                                <th>Received Date</th>
+                                <th>Receipt</th>
+                                <th>Customer</th>
+                                <th>Invoices Paid</th>
+                                <th>Method</th>
+                                <th class="text-end">Amount Received</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($paymentDetails as $payment)
                                 <tr>
                                     <td>{{ $payment->payment_date?->format('d M Y') ?: $payment->created_at?->format('d M Y') }}</td>
-                                    <td><span class="code-text">{{ $payment->code() }}</span></td>
+                                    <td><strong class="erp-report-code">{{ $payment->code() }}</strong></td>
                                     <td>{{ $payment->customer?->full_name ?: '-' }}</td>
+                                    <td>
+                                        @forelse ($payment->allocations as $allocation)
+                                            <div>{{ $allocation->documentNumber() }} - {{ \App\Helpers\CurrencyHelper::format($allocation->allocated_amount) }}</div>
+                                        @empty
+                                            -
+                                        @endforelse
+                                    </td>
+                                    <td>{{ $payment->methodLabel() }}</td>
                                     <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($payment->receivedAmount()) }}</td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="4" class="no-results-cell">No collections found for this period.</td>
-                                </tr>
+                                <tr><td colspan="6" class="erp-report-empty">No payment records found.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
 
-            <div class="table-card">
-                <div class="table-card-header">
-                    <h2>Outstanding Customers</h2>
-                </div>
-                <div class="table-scroll">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Phone</th>
-                                <th class="text-end">Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($outstandingCustomers as $row)
-                                <tr>
-                                    <td>
-                                        <span class="code-text">{{ $row['customer']->customer_code }}</span>
-                                        <div>{{ $row['customer']->full_name ?: '-' }}</div>
-                                    </td>
-                                    <td>{{ $row['customer']->phone ?: '-' }}</td>
-                                    <td class="text-end">{{ \App\Helpers\CurrencyHelper::format($row['outstanding']) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="no-results-cell">No outstanding balances.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="table-card">
-                <div class="table-card-header">
-                    <h2>Low Stock Batteries</h2>
-                </div>
-                <div class="table-scroll">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Battery</th>
-                                <th class="text-end">Stock</th>
-                                <th class="text-end">Alert</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($lowStockBatteries as $battery)
-                                <tr>
-                                    <td>
-                                        <span class="code-text">{{ $battery->battery_code }}</span>
-                                        <div>{{ $battery->brand }} {{ $battery->model }}</div>
-                                    </td>
-                                    <td class="text-end">{{ number_format($battery->stock_quantity) }}</td>
-                                    <td class="text-end">{{ number_format($battery->low_stock_alert_quantity) }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="no-results-cell">No low stock batteries.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <footer class="erp-report-footer">
+                <span>Generated by M. Bilal jamshed</span>
+            </footer>
         </div>
     </section>
 </x-app-layout>

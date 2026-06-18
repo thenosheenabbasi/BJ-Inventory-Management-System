@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BatteryInventory;
 use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\RepairJob;
 use App\Models\Sale;
-use App\Models\SaleItem;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class ReportController extends Controller
 {
@@ -21,23 +22,54 @@ class ReportController extends Controller
     {
         $this->authorizeReportsAccess();
 
+        return view('reports.index', $this->reportData($request));
+    }
+
+    public function downloadPdf(Request $request): Response
+    {
+        $this->authorizeReportsAccess();
+
+        $data = $this->reportData($request);
+        $customerPart = $data['selectedCustomer']
+            ? Str::slug($data['selectedCustomer']->full_name)
+            : 'all-customers';
+        $filename = sprintf(
+            'payment-summary-report-%s-%s-to-%s.pdf',
+            $customerPart,
+            $data['startDate']->format('Y-m-d'),
+            $data['endDate']->format('Y-m-d')
+        );
+
+        return Pdf::loadView('reports.pdf', $data)
+            ->setPaper('a4', 'landscape')
+            ->download($filename);
+    }
+
+    private function reportData(Request $request): array
+    {
         $validated = $request->validate([
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date'],
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
         ]);
 
         $startDate = Carbon::parse($validated['start_date'] ?? now()->startOfMonth()->toDateString())->startOfDay();
         $endDate = Carbon::parse($validated['end_date'] ?? now()->endOfMonth()->toDateString())->endOfDay();
+        $customerId = isset($validated['customer_id']) ? (int) $validated['customer_id'] : null;
 
         if ($startDate->greaterThan($endDate)) {
             [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
         }
 
-        $salesQuery = Sale::query()->whereBetween('created_at', [$startDate, $endDate]);
+        $salesQuery = Sale::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
         $repairsQuery = RepairJob::query()
             ->withSum('paymentAllocations as allocated_payment_amount', 'allocated_amount')
-            ->whereBetween('created_at', [$startDate, $endDate]);
-        $paymentsQuery = $this->paymentDateRangeQuery(Payment::query(), $startDate, $endDate);
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
+        $paymentsQuery = $this->paymentDateRangeQuery(Payment::query(), $startDate, $endDate)
+            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId));
 
         $payments = (clone $paymentsQuery)->get(['amount', 'total_payment_amount']);
         $repairs = (clone $repairsQuery)->get();
@@ -50,56 +82,27 @@ class ReportController extends Controller
         $repairRemaining = round((float) $repairs->sum(fn (RepairJob $repairJob): float => $repairJob->remainingAmount()), 2);
         $collectionTotal = round($payments->sum(fn (Payment $payment): float => $payment->receivedAmount()), 2);
 
-        $topSellingBatteries = SaleItem::query()
-            ->select([
-                'battery_inventory_id',
-                DB::raw('SUM(quantity) as quantity_sold'),
-                DB::raw('SUM(total_price) as sales_total'),
-            ])
-            ->whereHas('sale', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
-            })
-            ->with('battery')
-            ->groupBy('battery_inventory_id')
-            ->orderByDesc('quantity_sold')
-            ->limit(8)
+        $saleDetails = (clone $salesQuery)
+            ->with(['customer', 'items.battery'])
+            ->latest()
             ->get();
 
-        $recentCollections = (clone $paymentsQuery)
+        $repairDetails = (clone $repairsQuery)
             ->with('customer')
+            ->latest()
+            ->get();
+
+        $paymentDetails = (clone $paymentsQuery)
+            ->with(['customer', 'allocations.invoice', 'allocations.repairJob'])
             ->latest('payment_date')
             ->latest()
-            ->limit(10)
             ->get();
 
-        $lowStockBatteries = BatteryInventory::query()
-            ->whereColumn('stock_quantity', '<=', 'low_stock_alert_quantity')
-            ->orderBy('stock_quantity')
-            ->orderBy('brand')
-            ->limit(8)
-            ->get();
-
-        $outstandingCustomers = Customer::query()
-            ->with([
-                'sales',
-                'repairJobs' => function ($query) {
-                    $query->withSum('paymentAllocations as allocated_payment_amount', 'allocated_amount');
-                },
-            ])
-            ->get()
-            ->toBase()
-            ->map(fn (Customer $customer): array => [
-                'customer' => $customer,
-                'outstanding' => $customer->outstandingBalanceTotal(),
-            ])
-            ->filter(fn (array $row): bool => $row['outstanding'] > 0)
-            ->sortByDesc('outstanding')
-            ->take(8)
-            ->values();
-
-        return view('reports.index', [
+        return [
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'customers' => Customer::query()->orderBy('full_name')->get(['id', 'customer_code', 'full_name', 'phone']),
+            'selectedCustomer' => $customerId ? Customer::find($customerId) : null,
             'summary' => [
                 'sales_count' => (clone $salesQuery)->count(),
                 'sales_total' => $salesTotal,
@@ -114,22 +117,15 @@ class ReportController extends Controller
                 'gross_business' => round($salesTotal + $repairTotal, 2),
                 'gross_received' => round($salesReceived + $repairPaid, 2),
                 'gross_remaining' => round($salesRemaining + $repairRemaining, 2),
-                'inventory_stock' => BatteryInventory::sum('stock_quantity'),
-                'inventory_value' => BatteryInventory::query()
-                    ->selectRaw('COALESCE(SUM(stock_quantity * sale_price), 0) as total')
-                    ->value('total'),
-                'low_stock_count' => BatteryInventory::query()
-                    ->whereColumn('stock_quantity', '<=', 'low_stock_alert_quantity')
-                    ->count(),
             ],
-            'topSellingBatteries' => $topSellingBatteries,
-            'recentCollections' => $recentCollections,
-            'lowStockBatteries' => $lowStockBatteries,
-            'outstandingCustomers' => $outstandingCustomers,
-        ]);
+            'saleDetails' => $saleDetails,
+            'repairDetails' => $repairDetails,
+            'paymentDetails' => $paymentDetails,
+            'generatedAt' => now(),
+        ];
     }
 
-    private function paymentDateRangeQuery($query, Carbon $startDate, Carbon $endDate)
+    private function paymentDateRangeQuery(Builder $query, Carbon $startDate, Carbon $endDate): Builder
     {
         return $query->where(function ($dateQuery) use ($startDate, $endDate) {
             $dateQuery

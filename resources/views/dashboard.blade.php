@@ -32,7 +32,7 @@
             <div class="stat-card">
                 <div class="stat-icon">S</div>
                 <div>
-                    <p class="stat-meta">Today Sales</p>
+                    <p class="stat-meta">Today Sale Battery</p>
                     <p class="stat-value">{{ \App\Helpers\CurrencyHelper::format(4920) }}</p>
                 </div>
             </div>
@@ -133,7 +133,7 @@
 
         <div class="dashboard-panels">
             <div class="summary-card">
-                <p class="summary-title">Today's Sales Summary</p>
+                <p class="summary-title">Today's Sale Battery Summary</p>
                 <p class="summary-value">{{ \App\Helpers\CurrencyHelper::format(4920) }}</p>
                 <p class="summary-subtext">Strong morning performance across invoice capture and POS activity. Keep stock and repairs balanced for the afternoon rush.</p>
                 <div class="d-flex flex-wrap gap-2 mt-4">

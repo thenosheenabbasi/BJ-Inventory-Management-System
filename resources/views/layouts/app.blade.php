@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'M. Bilal jamshed') }}</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}?v={{ filemtime(public_path('favicon.png')) }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v={{ filemtime(public_path('favicon.png')) }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-N5vRtFetEfE9OdLDKnsXHpswJ4cyGmX5a8kTzadxi+u0i7GoCmBbJZzZH+OiJhCE" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
@@ -22,36 +24,35 @@
         $menuItems = [];
         if ($userRole === 'admin') {
             $menuItems = [
-                ['label' => 'Dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
-                ['label' => 'Customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
-                ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
-                ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
-                ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'Reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
-                ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
-                ['label' => 'Users & Roles', 'href' => '#'],
-                ['label' => 'Settings', 'href' => '#'],
+                ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
+                ['label' => 'Customers', 'icon' => 'customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
+                ['label' => 'Battery Inventory', 'icon' => 'battery', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
+                ['label' => 'Repair Battery', 'icon' => 'repair', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
+                ['label' => 'Sale Battery', 'icon' => 'sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
+                ['label' => 'Payments', 'icon' => 'payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
+                ['label' => 'Reports', 'icon' => 'reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
+                ['label' => 'Suppliers', 'icon' => 'suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
+                ['label' => 'Users & Roles', 'icon' => 'roles', 'href' => route('users.index'), 'active' => 'users.*'],
             ];
         } elseif ($userRole === 'manager') {
             $menuItems = [
-                ['label' => 'Dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
-                ['label' => 'Customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
-                ['label' => 'Battery Inventory', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
-                ['label' => 'Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'Sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
-                ['label' => 'Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'Reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
-                ['label' => 'Suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
+                ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
+                ['label' => 'Customers', 'icon' => 'customers', 'href' => route('customers.index'), 'active' => 'customers.*'],
+                ['label' => 'Battery Inventory', 'icon' => 'battery', 'href' => route('battery-inventory.index'), 'active' => 'battery-inventory.*'],
+                ['label' => 'Repair Battery', 'icon' => 'repair', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
+                ['label' => 'Sale Battery', 'icon' => 'sales', 'href' => route('sales.index'), 'active' => 'sales.*'],
+                ['label' => 'Payments', 'icon' => 'payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
+                ['label' => 'Reports', 'icon' => 'reports', 'href' => route('reports.index'), 'active' => 'reports.*'],
+                ['label' => 'Suppliers', 'icon' => 'suppliers', 'href' => route('suppliers.index'), 'active' => 'suppliers.*'],
             ];
         } else {
             $menuItems = [
-                ['label' => 'Dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
-                ['label' => 'My Repair Battery', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
-                ['label' => 'My Purchases', 'href' => '#'],
-                ['label' => 'My Payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
-                ['label' => 'My Invoices', 'href' => '#'],
-                ['label' => 'Profile', 'href' => route('profile.edit')],
+                ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'active' => 'dashboard'],
+                ['label' => 'My Repair Battery', 'icon' => 'repair', 'href' => route('repair-jobs.index'), 'active' => 'repair-jobs.*'],
+                ['label' => 'My Purchases', 'icon' => 'sales', 'href' => '#'],
+                ['label' => 'My Payments', 'icon' => 'payments', 'href' => route('payments.index'), 'active' => 'payments.*'],
+                ['label' => 'My Invoices', 'icon' => 'invoice', 'href' => '#'],
+                ['label' => 'Profile', 'icon' => 'profile', 'href' => route('profile.edit')],
             ];
         }
     @endphp
@@ -71,7 +72,45 @@
 
             <nav class="sidebar-nav">
                 @foreach ($menuItems as $item)
-                    <a href="{{ $item['href'] }}" class="sidebar-link {{ isset($item['active']) && request()->routeIs($item['active']) ? 'active' : '' }}">{{ $item['label'] }}</a>
+                    <a href="{{ $item['href'] }}" class="sidebar-link {{ isset($item['active']) && request()->routeIs($item['active']) ? 'active' : '' }}">
+                        <span class="sidebar-link-icon" aria-hidden="true">
+                            @switch($item['icon'])
+                                @case('dashboard')
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                                    @break
+                                @case('customers')
+                                    <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    @break
+                                @case('battery')
+                                    <svg viewBox="0 0 24 24"><rect x="2" y="6" width="18" height="12" rx="2"/><path d="M22 10v4"/><path d="M6 10v4"/><path d="M10 10v4"/><path d="M14 10v4"/></svg>
+                                    @break
+                                @case('repair')
+                                    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5-5L7 4l3 3-2.5 2.5"/><path d="m5 12-3 3 7 7 3-3"/><path d="m14 14 7-7"/><path d="m17 4 3 3"/></svg>
+                                    @break
+                                @case('sales')
+                                    <svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M3 4h2l2.7 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6"/></svg>
+                                    @break
+                                @case('payments')
+                                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h2"/></svg>
+                                    @break
+                                @case('reports')
+                                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 17v-3"/><path d="M12 17v-6"/><path d="M16 17v-2"/></svg>
+                                    @break
+                                @case('suppliers')
+                                    <svg viewBox="0 0 24 24"><path d="M10 17h4V5H2v12h3"/><path d="M14 9h4l4 4v4h-3"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/></svg>
+                                    @break
+                                @case('roles')
+                                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><circle cx="12" cy="10" r="2"/><path d="M8.5 16a4 4 0 0 1 7 0"/></svg>
+                                    @break
+                                @case('invoice')
+                                    <svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6"/><path d="M9 11h6"/><path d="M9 15h3"/></svg>
+                                    @break
+                                @default
+                                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22a8 8 0 0 1 16 0"/></svg>
+                            @endswitch
+                        </span>
+                        <span class="sidebar-link-label">{{ $item['label'] }}</span>
+                    </a>
                 @endforeach
             </nav>
 

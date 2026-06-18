@@ -31,6 +31,7 @@ class PaymentController extends Controller
                 $query->where('id', $customerId ?: 0);
             })
             ->whereHas('customerPayments')
+            ->withMax('customerPayments as latest_payment_date', 'payment_date')
             ->with([
                 'payments' => function ($query) {
                     $query
@@ -61,7 +62,8 @@ class PaymentController extends Controller
             });
 
         $paymentCustomers = $paymentCustomersQuery
-            ->latest()
+            ->orderByDesc('latest_payment_date')
+            ->latest('id')
             ->paginate(12)
             ->withQueryString();
 
@@ -224,7 +226,7 @@ class PaymentController extends Controller
                 return [
                     'number' => $sale->sale_number,
                     'date' => $sale->created_at,
-                    'details' => $itemLines->isNotEmpty() ? $itemLines->pluck('details')->all() : ['Sale invoice'],
+                    'details' => $itemLines->isNotEmpty() ? $itemLines->pluck('details')->all() : ['Sale battery invoice'],
                     'quantities' => $itemLines->isNotEmpty() ? $itemLines->pluck('quantity')->all() : [0],
                     'unit_prices' => $itemLines->isNotEmpty() ? $itemLines->pluck('unit_price')->all() : [0],
                     'total' => round((float) $sale->total_amount, 2),
@@ -266,9 +268,9 @@ class PaymentController extends Controller
             'customer' => $customer,
             'invoiceRows' => $invoiceRows,
             'payments' => $customer->paymentRecords()->sortBy([
-                ['payment_date', 'asc'],
-                ['created_at', 'asc'],
-                ['id', 'asc'],
+                ['payment_date', 'desc'],
+                ['created_at', 'desc'],
+                ['id', 'desc'],
             ])->values(),
             'summary' => $summary,
         ]);
@@ -295,23 +297,26 @@ class PaymentController extends Controller
             $repairsQuery->lockForUpdate();
         }
 
-        $saleInvoices = $salesQuery->get()->map(function (Sale $sale): array {
-            return [
-                'key' => 'sale_'.$sale->id,
-                'type' => 'sale',
-                'type_label' => 'Sale',
-                'id' => $sale->id,
-                'number' => $sale->sale_number,
-                'date' => $sale->created_at,
-                'total_amount' => round((float) $sale->total_amount, 2),
-                'received_amount' => round((float) $sale->received_amount, 2),
-                'remaining_amount' => round((float) $sale->remaining_amount, 2),
-                'status_label' => $sale->paymentStatusLabel(),
-                'model' => $sale,
-            ];
-        });
+        $saleInvoices = $salesQuery->get()
+            ->toBase()
+            ->map(function (Sale $sale): array {
+                return [
+                    'key' => 'sale_'.$sale->id,
+                    'type' => 'sale',
+                    'type_label' => 'Sale',
+                    'id' => $sale->id,
+                    'number' => $sale->sale_number,
+                    'date' => $sale->created_at,
+                    'total_amount' => round((float) $sale->total_amount, 2),
+                    'received_amount' => round((float) $sale->received_amount, 2),
+                    'remaining_amount' => round((float) $sale->remaining_amount, 2),
+                    'status_label' => $sale->paymentStatusLabel(),
+                    'model' => $sale,
+                ];
+            });
 
         $repairInvoices = $repairsQuery->get()
+            ->toBase()
             ->map(function (RepairJob $repairJob): array {
                 return [
                     'key' => 'repair_'.$repairJob->id,
